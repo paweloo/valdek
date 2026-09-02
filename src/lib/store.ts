@@ -48,7 +48,7 @@ type ValdekState = {
   updateTransfer: (id: string, patch: Partial<Transfer>) => void;
   ignoreTransfer: (id: string, ignored: boolean) => void;
   rematch: () => void;
-  assignTransfer: (transferId: string, participantId: string, month?: string) => void;
+  assignTransfer: (transferId: string, participantId: string, month?: string, confirm?: boolean) => void;
   unmatchTransfer: (transferId: string) => void;
   confirmMatch: (transferId: string) => void;
   splitTwoMonths: (transferId: string) => void;
@@ -228,11 +228,12 @@ export const useValdek = create<ValdekState>()(
           matches: matchTransfers({ transfers, participants, groups, statementMonth: selectedMonth, existing: matches }),
         });
       },
-      assignTransfer: (transferId, participantId, month) => {
+      assignTransfer: (transferId, participantId, month, confirm) => {
         const transfer = get().transfers.find((t) => t.id === transferId);
         const participant = get().participants.find((p) => p.id === participantId);
         if (!transfer || !participant) return;
         const next = buildManualMatch({ transfer, participant, month: month ?? get().selectedMonth });
+        if (confirm) next.kind = "confirmed";
         set({ matches: [...get().matches.filter((m) => m.transferId !== transferId), next] });
       },
       unmatchTransfer: (transferId) =>
@@ -249,8 +250,8 @@ export const useValdek = create<ValdekState>()(
         const fee = person.monthlyFee || transfer.amount / 2;
         const [y, m] = match.month.split("-").map(Number);
         const nextMonth = m === 12 ? `${y + 1}-01` : `${y}-${String(m + 1).padStart(2, "0")}`;
-        const first: PaymentMatch = { ...match, id: uid("match"), amount: fee, amountIssue: "ok", kind: "manual", reasons: ["rozliczone jako dwa miesiące"] };
-        const second: PaymentMatch = { ...match, id: uid("match"), month: nextMonth, amount: transfer.amount - fee, amountIssue: "ok", kind: "manual", reasons: ["druga rata z tej samej wpłaty"] };
+        const first: PaymentMatch = { ...match, id: uid("match"), amount: fee, amountIssue: "ok", kind: "confirmed", reasons: ["rozliczone jako dwa miesiące"] };
+        const second: PaymentMatch = { ...match, id: uid("match"), month: nextMonth, amount: transfer.amount - fee, amountIssue: "ok", kind: "confirmed", reasons: ["druga rata z tej samej wpłaty"] };
         set({ matches: [...get().matches.filter((m) => m.transferId !== transferId), first, second] });
       },
       setManual: (participantId, month, mark) => {

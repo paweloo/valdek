@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { Check, Link2, Split, Unlink } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { AppShell } from "@/components/valdek/app-shell";
 import { StatusBadge } from "@/components/valdek/status-badge";
 import { Button } from "@/components/ui/button";
@@ -13,12 +13,20 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useValdek } from "@/lib/store";
-import { fullName, monthLabel, normalizeText, seasonMonths } from "@/lib/polish";
+import { detectMonthsInText, fullName, monthLabel, normalizeText, seasonMonths } from "@/lib/polish";
 import { formatPln } from "@/lib/utils";
 import { bucketForMatches, monthStatusFor } from "@/lib/status";
-import type { Transfer } from "@/lib/types";
+import type { Group, PaymentMatch, Transfer } from "@/lib/types";
 
 export const Route = createFileRoute("/rozliczenie")({ component: RozliczeniePage });
+
+type Person = {
+  id: string;
+  firstName: string;
+  lastName: string;
+  groupId: string;
+  monthlyFee: number;
+};
 
 function RozliczeniePage() {
   const selectedMonth = useValdek((s) => s.selectedMonth);
@@ -51,6 +59,7 @@ function RozliczeniePage() {
       return !q || normalizeText(`${p.firstName} ${p.lastName} ${g}`).includes(q);
     });
   }, [participants, groups, query]);
+  const months = seasonMonths(seasonStartYear);
 
   return (
     <AppShell>
@@ -77,19 +86,22 @@ function RozliczeniePage() {
               title="Do wyjaśnienia"
               empty="Brak nierozpoznanych przelewów."
               items={unmatched}
-              months={seasonMonths(seasonStartYear)}
+              months={months}
               selectedMonth={selectedMonth}
+              seasonStartYear={seasonStartYear}
               participants={people}
               groups={groups}
               matches={matches}
               onAssign={assignTransfer}
+              onConfirm={confirmMatch}
             />
             <TransferGroup
               title="Do potwierdzenia"
               empty="Nic nie czeka na Twoje oko."
               items={review}
-              months={seasonMonths(seasonStartYear)}
+              months={months}
               selectedMonth={selectedMonth}
+              seasonStartYear={seasonStartYear}
               participants={people}
               groups={groups}
               matches={matches}
@@ -102,8 +114,9 @@ function RozliczeniePage() {
               title="Zaksięgowane"
               empty="Jeszcze nikt nie został pewnie dopasowany."
               items={confirmed}
-              months={seasonMonths(seasonStartYear)}
+              months={months}
               selectedMonth={selectedMonth}
+              seasonStartYear={seasonStartYear}
               participants={people}
               groups={groups}
               matches={matches}
@@ -143,6 +156,7 @@ function TransferGroup({
   items,
   months,
   selectedMonth,
+  seasonStartYear,
   participants,
   groups,
   matches,
@@ -156,16 +170,11 @@ function TransferGroup({
   items: Transfer[];
   months: string[];
   selectedMonth: string;
-  participants: {
-    id: string;
-    firstName: string;
-    lastName: string;
-    groupId: string;
-    monthlyFee: number;
-  }[];
-  groups: { id: string; name: string }[];
-  matches: ReturnType<typeof useValdek.getState>["matches"];
-  onAssign?: (transferId: string, participantId: string, month?: string) => void;
+  seasonStartYear: number;
+  participants: Person[];
+  groups: Pick<Group, "id" | "name">[];
+  matches: PaymentMatch[];
+  onAssign?: (transferId: string, participantId: string, month?: string, confirm?: boolean) => void;
   onConfirm?: (transferId: string) => void;
   onUnmatch?: (transferId: string) => void;
   onSplit?: (transferId: string) => void;
@@ -177,116 +186,164 @@ function TransferGroup({
         <p className="text-sm text-muted-foreground">{empty}</p>
       ) : (
         <ul className="flex flex-col gap-3">
-          {items.map((t) => {
-            const related = matches.filter((m) => m.transferId === t.id);
-            const primary = related[0];
-            const person = participants.find((p) => p.id === primary?.participantId);
-            const amountStatus =
-              primary && primary.amountIssue !== "ok"
-                ? primary.amountIssue === "partial"
-                  ? ("partial" as const)
-                  : ("over" as const)
-                : null;
-            return (
-              <li key={t.id} className="rounded-xl bg-card p-4 shadow-[var(--shadow-border)]">
-                <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
-                  <div className="min-w-0">
-                    <div className="flex flex-wrap items-baseline gap-3">
-                      <span className="tabular text-lg">{formatPln(t.amount)}</span>
-                      <span className="text-xs text-muted-foreground">{t.date}</span>
-                      {amountStatus ? <StatusBadge status={amountStatus} /> : null}
-                    </div>
-                    <p className="mt-1 text-sm">{t.title}</p>
-                    {primary ? (
-                      <p className="mt-2 text-xs text-muted-foreground">
-                        {person
-                          ? fullName(person.firstName, person.lastName)
-                          : "osoba spoza filtra"}{" "}
-                        · {monthLabel(primary.month)} · {Math.round(primary.confidence * 100)}% ·{" "}
-                        {primary.reasons.join(" · ")}
-                      </p>
-                    ) : null}
-                  </div>
-                  <div className="flex min-w-0 flex-col gap-2 md:w-72">
-                    {onAssign ? (
-                      <Select
-                        value={primary?.participantId ?? "__none"}
-                        onValueChange={(id) => {
-                          if (id === "__none") return;
-                          onAssign(t.id, id, primary?.month ?? selectedMonth);
-                        }}
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="Przypisz do osoby" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="__none" disabled>
-                            Przypisz do osoby
-                          </SelectItem>
-                          {participants.map((p) => (
-                            <SelectItem key={p.id} value={p.id}>
-                              {fullName(p.firstName, p.lastName)} ·{" "}
-                              {groups.find((g) => g.id === p.groupId)?.name}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    ) : null}
-                    {onAssign && primary ? (
-                      <Select
-                        value={primary.month}
-                        onValueChange={(m) => onAssign(t.id, primary.participantId, m)}
-                      >
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {months.map((m) => (
-                            <SelectItem key={m} value={m}>
-                              {monthLabel(m)}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    ) : null}
-                    <div className="flex flex-wrap gap-2">
-                      {onConfirm && primary ? (
-                        <Button type="button" size="sm" onClick={() => onConfirm(t.id)}>
-                          <Check /> Potwierdź
-                        </Button>
-                      ) : null}
-                      {onSplit && primary && primary.amountIssue === "over" ? (
-                        <Button
-                          type="button"
-                          size="sm"
-                          variant="secondary"
-                          onClick={() => onSplit(t.id)}
-                        >
-                          <Split /> Dwa miesiące
-                        </Button>
-                      ) : null}
-                      {onUnmatch && primary ? (
-                        <Button
-                          type="button"
-                          size="sm"
-                          variant="ghost"
-                          onClick={() => onUnmatch(t.id)}
-                        >
-                          <Unlink /> Odłącz
-                        </Button>
-                      ) : (
-                        <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
-                          <Link2 className="size-3" /> przypisz z listy
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              </li>
-            );
-          })}
+          {items.map((t) => (
+            <TransferCard
+              key={t.id}
+              transfer={t}
+              related={matches.filter((m) => m.transferId === t.id)}
+              months={months}
+              selectedMonth={selectedMonth}
+              seasonStartYear={seasonStartYear}
+              participants={participants}
+              groups={groups}
+              onAssign={onAssign}
+              onConfirm={onConfirm}
+              onUnmatch={onUnmatch}
+              onSplit={onSplit}
+            />
+          ))}
         </ul>
       )}
     </section>
+  );
+}
+
+function TransferCard({
+  transfer,
+  related,
+  months,
+  selectedMonth,
+  seasonStartYear,
+  participants,
+  groups,
+  onAssign,
+  onConfirm,
+  onUnmatch,
+  onSplit,
+}: {
+  transfer: Transfer;
+  related: PaymentMatch[];
+  months: string[];
+  selectedMonth: string;
+  seasonStartYear: number;
+  participants: Person[];
+  groups: Pick<Group, "id" | "name">[];
+  onAssign?: (transferId: string, participantId: string, month?: string, confirm?: boolean) => void;
+  onConfirm?: (transferId: string) => void;
+  onUnmatch?: (transferId: string) => void;
+  onSplit?: (transferId: string) => void;
+}) {
+  const primary = related[0];
+  const titleMonth = detectMonthsInText(transfer.title, seasonStartYear)[0];
+  const [draftPerson, setDraftPerson] = useState(primary?.participantId ?? "");
+  const [draftMonth, setDraftMonth] = useState(primary?.month ?? titleMonth ?? selectedMonth);
+
+  useEffect(() => {
+    setDraftPerson(primary?.participantId ?? "");
+    setDraftMonth(primary?.month ?? titleMonth ?? selectedMonth);
+  }, [primary?.participantId, primary?.month, titleMonth, selectedMonth]);
+
+  const personId = draftPerson || primary?.participantId || "";
+  const month = draftMonth || primary?.month || selectedMonth;
+  const person = participants.find((p) => p.id === (primary?.participantId ?? personId));
+  const amountStatus =
+    primary && primary.amountIssue !== "ok"
+      ? primary.amountIssue === "partial"
+        ? ("partial" as const)
+        : ("over" as const)
+      : null;
+
+  const pickPerson = (id: string) => {
+    if (id === "__none") return;
+    setDraftPerson(id);
+    if (primary) onAssign?.(transfer.id, id, month);
+  };
+
+  const pickMonth = (next: string) => {
+    setDraftMonth(next);
+    if (primary) onAssign?.(transfer.id, primary.participantId, next);
+  };
+
+  const confirm = () => {
+    if (!personId) return;
+    if (onAssign) onAssign(transfer.id, personId, month, true);
+    else onConfirm?.(transfer.id);
+  };
+
+  return (
+    <li className="rounded-xl bg-card p-4 shadow-[var(--shadow-border)]">
+      <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+        <div className="min-w-0">
+          <div className="flex flex-wrap items-baseline gap-3">
+            <span className="tabular text-lg">{formatPln(transfer.amount)}</span>
+            <span className="text-xs text-muted-foreground">{transfer.date}</span>
+            {amountStatus ? <StatusBadge status={amountStatus} /> : null}
+          </div>
+          <p className="mt-1 text-sm">{transfer.title}</p>
+          {primary ? (
+            <p className="mt-2 text-xs text-muted-foreground">
+              {person ? fullName(person.firstName, person.lastName) : "osoba spoza filtra"} ·{" "}
+              {monthLabel(primary.month)} · {Math.round(primary.confidence * 100)}% ·{" "}
+              {primary.reasons.join(" · ")}
+            </p>
+          ) : null}
+        </div>
+        <div className="flex min-w-0 flex-col gap-2 md:w-72">
+          {onAssign ? (
+            <Select value={personId || "__none"} onValueChange={pickPerson}>
+              <SelectTrigger>
+                <SelectValue placeholder="Przypisz do osoby" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="__none" disabled>
+                  Przypisz do osoby
+                </SelectItem>
+                {participants.map((p) => (
+                  <SelectItem key={p.id} value={p.id}>
+                    {fullName(p.firstName, p.lastName)} ·{" "}
+                    {groups.find((g) => g.id === p.groupId)?.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          ) : null}
+          {onAssign ? (
+            <Select value={month} onValueChange={pickMonth}>
+              <SelectTrigger>
+                <SelectValue placeholder="Miesiąc" />
+              </SelectTrigger>
+              <SelectContent>
+                {months.map((m) => (
+                  <SelectItem key={m} value={m}>
+                    {monthLabel(m)}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          ) : null}
+          <div className="flex flex-wrap gap-2">
+            {onConfirm || onAssign ? (
+              <Button type="button" size="sm" disabled={!personId} onClick={confirm}>
+                <Check /> Potwierdź
+              </Button>
+            ) : null}
+            {onSplit && primary && primary.amountIssue === "over" ? (
+              <Button type="button" size="sm" variant="secondary" onClick={() => onSplit(transfer.id)}>
+                <Split /> Dwa miesiące
+              </Button>
+            ) : null}
+            {onUnmatch && primary ? (
+              <Button type="button" size="sm" variant="ghost" onClick={() => onUnmatch(transfer.id)}>
+                <Unlink /> Odłącz
+              </Button>
+            ) : onAssign && !primary ? (
+              <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
+                <Link2 className="size-3" /> wybierz osobę i miesiąc
+              </span>
+            ) : null}
+          </div>
+        </div>
+      </div>
+    </li>
   );
 }
