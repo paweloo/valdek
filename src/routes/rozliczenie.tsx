@@ -5,7 +5,13 @@ import { AppShell } from "@/components/valdek/app-shell";
 import { StatusBadge } from "@/components/valdek/status-badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { useValdek } from "@/lib/store";
 import { fullName, monthLabel, normalizeText, seasonMonths } from "@/lib/polish";
 import { formatPln } from "@/lib/utils";
@@ -29,9 +35,15 @@ function RozliczeniePage() {
   const [query, setQuery] = useState("");
   const participants = allParticipants.filter((p) => p.active);
   const visibleTransfers = transfers.filter((t) => !t.ignored && t.direction !== "out");
-  const unmatched = visibleTransfers.filter((t) => bucketForMatches(matches.filter((m) => m.transferId === t.id)) === "unmatched");
-  const review = visibleTransfers.filter((t) => bucketForMatches(matches.filter((m) => m.transferId === t.id)) === "review");
-  const confirmed = visibleTransfers.filter((t) => bucketForMatches(matches.filter((m) => m.transferId === t.id)) === "booked");
+  const unmatched = visibleTransfers.filter(
+    (t) => bucketForMatches(matches.filter((m) => m.transferId === t.id)) === "unmatched",
+  );
+  const review = visibleTransfers.filter(
+    (t) => bucketForMatches(matches.filter((m) => m.transferId === t.id)) === "review",
+  );
+  const confirmed = visibleTransfers.filter(
+    (t) => bucketForMatches(matches.filter((m) => m.transferId === t.id)) === "booked",
+  );
   const people = useMemo(() => {
     const q = normalizeText(query);
     return participants.filter((p) => {
@@ -48,16 +60,55 @@ function RozliczeniePage() {
             <p className="text-xs tracking-[0.2em] text-muted-foreground uppercase">Kasa</p>
             <h1 className="font-display mt-1 text-4xl">Rozliczenie</h1>
             <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
-              Po lewej przelewy, po prawej lista. Potwierdź pewne dopasowania, przypisz kwiatki ręcznie.
+              Po lewej przelewy, po prawej lista. Potwierdź pewne dopasowania, przypisz ręcznie
+              nierozpoznane przelewy.
             </p>
           </div>
-          <Input className="lg:max-w-72" placeholder="Filtruj uczestników" value={query} onChange={(e) => setQuery(e.target.value)} />
+          <Input
+            className="lg:max-w-72"
+            placeholder="Filtruj uczestników"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+          />
         </header>
         <div className="grid gap-4 xl:grid-cols-[1.15fr_0.85fr]">
           <div className="flex flex-col gap-6">
-            <TransferGroup title="Do wyjaśnienia" empty="Brak nierozpoznanych przelewów." items={unmatched} months={seasonMonths(seasonStartYear)} selectedMonth={selectedMonth} participants={people} groups={groups} matches={matches} onAssign={assignTransfer} />
-            <TransferGroup title="Do potwierdzenia" empty="Nic nie czeka na Twoje oko." items={review} months={seasonMonths(seasonStartYear)} selectedMonth={selectedMonth} participants={people} groups={groups} matches={matches} onAssign={assignTransfer} onConfirm={confirmMatch} onUnmatch={unmatchTransfer} onSplit={splitTwoMonths} />
-            <TransferGroup title="Zaksięgowane" empty="Jeszcze nikt nie został pewnie dopasowany." items={confirmed} months={seasonMonths(seasonStartYear)} selectedMonth={selectedMonth} participants={people} groups={groups} matches={matches} onUnmatch={unmatchTransfer} />
+            <TransferGroup
+              title="Do wyjaśnienia"
+              empty="Brak nierozpoznanych przelewów."
+              items={unmatched}
+              months={seasonMonths(seasonStartYear)}
+              selectedMonth={selectedMonth}
+              participants={people}
+              groups={groups}
+              matches={matches}
+              onAssign={assignTransfer}
+            />
+            <TransferGroup
+              title="Do potwierdzenia"
+              empty="Nic nie czeka na Twoje oko."
+              items={review}
+              months={seasonMonths(seasonStartYear)}
+              selectedMonth={selectedMonth}
+              participants={people}
+              groups={groups}
+              matches={matches}
+              onAssign={assignTransfer}
+              onConfirm={confirmMatch}
+              onUnmatch={unmatchTransfer}
+              onSplit={splitTwoMonths}
+            />
+            <TransferGroup
+              title="Zaksięgowane"
+              empty="Jeszcze nikt nie został pewnie dopasowany."
+              items={confirmed}
+              months={seasonMonths(seasonStartYear)}
+              selectedMonth={selectedMonth}
+              participants={people}
+              groups={groups}
+              matches={matches}
+              onUnmatch={unmatchTransfer}
+            />
           </div>
           <aside className="rounded-xl bg-card p-4 shadow-[var(--shadow-border)] xl:sticky xl:top-24 xl:max-h-[calc(100dvh-8rem)] xl:overflow-y-auto">
             <h2 className="font-display text-2xl">Lista miesiąca</h2>
@@ -67,7 +118,9 @@ function RozliczeniePage() {
                 return (
                   <li key={p.id} className="flex items-center justify-between gap-3 py-3">
                     <div className="min-w-0">
-                      <div className="truncate text-sm font-medium">{fullName(p.firstName, p.lastName)}</div>
+                      <div className="truncate text-sm font-medium">
+                        {fullName(p.firstName, p.lastName)}
+                      </div>
                       <div className="truncate text-xs text-muted-foreground">
                         {groups.find((g) => g.id === p.groupId)?.name} · {formatPln(p.monthlyFee)}
                       </div>
@@ -103,7 +156,13 @@ function TransferGroup({
   items: Transfer[];
   months: string[];
   selectedMonth: string;
-  participants: { id: string; firstName: string; lastName: string; groupId: string; monthlyFee: number }[];
+  participants: {
+    id: string;
+    firstName: string;
+    lastName: string;
+    groupId: string;
+    monthlyFee: number;
+  }[];
   groups: { id: string; name: string }[];
   matches: ReturnType<typeof useValdek.getState>["matches"];
   onAssign?: (transferId: string, participantId: string, month?: string) => void;
@@ -122,7 +181,12 @@ function TransferGroup({
             const related = matches.filter((m) => m.transferId === t.id);
             const primary = related[0];
             const person = participants.find((p) => p.id === primary?.participantId);
-            const amountStatus = primary && primary.amountIssue !== "ok" ? (primary.amountIssue === "partial" ? ("partial" as const) : ("over" as const)) : null;
+            const amountStatus =
+              primary && primary.amountIssue !== "ok"
+                ? primary.amountIssue === "partial"
+                  ? ("partial" as const)
+                  : ("over" as const)
+                : null;
             return (
               <li key={t.id} className="rounded-xl bg-card p-4 shadow-[var(--shadow-border)]">
                 <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
@@ -135,7 +199,11 @@ function TransferGroup({
                     <p className="mt-1 text-sm">{t.title}</p>
                     {primary ? (
                       <p className="mt-2 text-xs text-muted-foreground">
-                        {person ? fullName(person.firstName, person.lastName) : "osoba spoza filtra"} · {monthLabel(primary.month)} · {Math.round(primary.confidence * 100)}% · {primary.reasons.join(" · ")}
+                        {person
+                          ? fullName(person.firstName, person.lastName)
+                          : "osoba spoza filtra"}{" "}
+                        · {monthLabel(primary.month)} · {Math.round(primary.confidence * 100)}% ·{" "}
+                        {primary.reasons.join(" · ")}
                       </p>
                     ) : null}
                   </div>
@@ -157,14 +225,18 @@ function TransferGroup({
                           </SelectItem>
                           {participants.map((p) => (
                             <SelectItem key={p.id} value={p.id}>
-                              {fullName(p.firstName, p.lastName)} · {groups.find((g) => g.id === p.groupId)?.name}
+                              {fullName(p.firstName, p.lastName)} ·{" "}
+                              {groups.find((g) => g.id === p.groupId)?.name}
                             </SelectItem>
                           ))}
                         </SelectContent>
                       </Select>
                     ) : null}
                     {onAssign && primary ? (
-                      <Select value={primary.month} onValueChange={(m) => onAssign(t.id, primary.participantId, m)}>
+                      <Select
+                        value={primary.month}
+                        onValueChange={(m) => onAssign(t.id, primary.participantId, m)}
+                      >
                         <SelectTrigger>
                           <SelectValue />
                         </SelectTrigger>
@@ -184,12 +256,22 @@ function TransferGroup({
                         </Button>
                       ) : null}
                       {onSplit && primary && primary.amountIssue === "over" ? (
-                        <Button type="button" size="sm" variant="secondary" onClick={() => onSplit(t.id)}>
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant="secondary"
+                          onClick={() => onSplit(t.id)}
+                        >
                           <Split /> Dwa miesiące
                         </Button>
                       ) : null}
                       {onUnmatch && primary ? (
-                        <Button type="button" size="sm" variant="ghost" onClick={() => onUnmatch(t.id)}>
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => onUnmatch(t.id)}
+                        >
                           <Unlink /> Odłącz
                         </Button>
                       ) : (

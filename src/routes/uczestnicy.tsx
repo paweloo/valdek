@@ -7,7 +7,13 @@ import { ParticipantDialog } from "@/components/valdek/participant-dialog";
 import { StatusBadge } from "@/components/valdek/status-badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { patchEwidencjaWorkbook, peopleFromState } from "@/lib/patch-ewidencja";
 import { b64ToBuffer, downloadBlob, formatPln } from "@/lib/utils";
 import { fullName, monthShort, normalizeText, seasonMonths } from "@/lib/polish";
@@ -56,7 +62,13 @@ function UczestnicyPage() {
         if (!res.ok) throw new Error("Brak szablonu ewidencji");
         source = await res.arrayBuffer();
       }
-      const people = peopleFromState({ participants, groups, matches, manual, seasonMonths: months });
+      const people = peopleFromState({
+        participants,
+        groups,
+        matches,
+        manual,
+        seasonMonths: months,
+      });
       const blob = await patchEwidencjaWorkbook(source, people, seasonStartYear);
       downloadBlob(blob, sourceFileName || "UCZESTNICY.xlsx");
       toast.success("Zapisano ten sam plik ewidencji — checkboxy i style zostają");
@@ -73,7 +85,7 @@ function UczestnicyPage() {
             <p className="text-xs tracking-[0.2em] text-muted-foreground uppercase">Lista</p>
             <h1 className="font-display mt-1 text-4xl">Uczestnicy</h1>
             <p className="mt-2 max-w-xl text-sm text-muted-foreground">
-              To ta sama ewidencja co w Excelu. Eksport nie robi nowego arkusza — dopisuje stawki i miesiące do wczytanego pliku, z checkboxami i Twoimi stylami.
+              Ewidencja uczestników i ich wpłat
             </p>
           </div>
           <div className="flex flex-wrap gap-2">
@@ -105,7 +117,12 @@ function UczestnicyPage() {
         <div className="flex flex-col gap-3 sm:flex-row">
           <div className="relative flex-1">
             <Search className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
-            <Input className="pl-9" placeholder="Szukaj nazwiska albo grupy" value={query} onChange={(e) => setQuery(e.target.value)} />
+            <Input
+              className="pl-9"
+              placeholder="Szukaj nazwiska albo grupy"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+            />
           </div>
           <Select value={groupId} onValueChange={setGroupId}>
             <SelectTrigger className="sm:w-56">
@@ -146,17 +163,26 @@ function UczestnicyPage() {
                         {fullName(p.firstName, p.lastName)}
                       </button>
                     </td>
-                    <td className="px-3 py-2 text-muted-foreground">{groups.find((g) => g.id === p.groupId)?.name}</td>
+                    <td className="px-3 py-2 text-muted-foreground">
+                      {groups.find((g) => g.id === p.groupId)?.name}
+                    </td>
                     <td className="px-3 py-2">
                       <input
                         className="h-9 w-20 rounded-sm bg-transparent px-1 tabular"
                         value={p.monthlyFee}
-                        onChange={(e) => updateParticipant(p.id, { monthlyFee: Number(e.target.value) || 0 })}
+                        onChange={(e) =>
+                          updateParticipant(p.id, { monthlyFee: Number(e.target.value) || 0 })
+                        }
                       />
                     </td>
                     {months.map((m) => {
                       const cell = monthStatusFor(p, m, matches, manual);
-                      const mark = cell.status === "paid" || cell.status === "over" ? "paid" : cell.status === "unpaid" ? null : cell.status;
+                      const mark =
+                        cell.status === "paid" || cell.status === "over"
+                          ? "paid"
+                          : cell.status === "unpaid"
+                            ? null
+                            : cell.status;
                       return (
                         <td key={m} className="px-2 py-2 text-center">
                           <button
@@ -165,7 +191,9 @@ function UczestnicyPage() {
                               setManual(
                                 p.id,
                                 m,
-                                mark === "paid" ? { status: "unpaid" } : { status: "paid", amount: p.monthlyFee },
+                                mark === "paid"
+                                  ? { status: "unpaid" }
+                                  : { status: "paid", amount: p.monthlyFee },
                               )
                             }
                           >
@@ -188,20 +216,29 @@ function UczestnicyPage() {
             </tbody>
           </table>
         </div>
-        <div className="flex flex-wrap gap-2 text-xs text-muted-foreground">
+        <div className="flex flex-wrap gap-2 text-xs text-muted-foreground justify-between items-center">
           <span>
-            {filtered.length} osób · klik w miesiąc oznacza wpłatę ręcznie · {formatPln(filtered.reduce((s, p) => s + p.monthlyFee, 0))} należności w widoku
+            {filtered.length} osób · {formatPln(filtered.reduce((s, p) => s + p.monthlyFee, 0))}{" "}
+            należności w widoku
           </span>
-          <Button variant="ghost" size="sm" onClick={() => seedDemo()}>
+          {/* <Button variant="ghost" size="sm" onClick={() => seedDemo()}>
             Przykładowe dane
-          </Button>
+          </Button> */}
           <Button variant="ghost" size="sm" onClick={() => resetAll()}>
-            Wyczyść kasę
+            Wyczyść dane
           </Button>
         </div>
       </div>
-      <ExcelImportDialog open={Boolean(excelFile)} onOpenChange={(o) => !o && setExcelFile(null)} file={excelFile} />
-      <ParticipantDialog open={editing !== undefined} onOpenChange={(o) => !o && setEditing(undefined)} participant={editing} />
+      <ExcelImportDialog
+        open={Boolean(excelFile)}
+        onOpenChange={(o) => !o && setExcelFile(null)}
+        file={excelFile}
+      />
+      <ParticipantDialog
+        open={editing !== undefined}
+        onOpenChange={(o) => !o && setEditing(undefined)}
+        participant={editing}
+      />
     </AppShell>
   );
 }

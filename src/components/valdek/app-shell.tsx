@@ -3,7 +3,13 @@ import { LayoutDashboard, Users, FileText, Scale, Menu, ShieldCheck } from "luci
 import { type ReactNode } from "react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTrigger } from "@/components/ui/sheet";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { useValdek } from "@/lib/store";
 import { monthLabel, seasonMonths } from "@/lib/polish";
 import { cn } from "@/lib/utils";
@@ -23,9 +29,9 @@ function Brand() {
       </span>
       <span className="flex flex-col leading-none">
         <span className="font-display text-2xl">Valdek</span>
-        <span className="mt-1 text-[11px] tracking-[0.18em] text-muted-foreground uppercase">
-          Kasa teatralna
-        </span>
+        {/* <span className="mt-1 text-[11px] tracking-[0.18em] text-muted-foreground uppercase">
+          System wpłat
+        </span> */}
       </span>
     </Link>
   );
@@ -45,7 +51,9 @@ function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
             onClick={onNavigate}
             className={cn(
               "flex h-11 items-center gap-3 rounded-md px-3 text-sm transition-colors",
-              active ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-accent hover:text-foreground",
+              active
+                ? "bg-primary text-primary-foreground"
+                : "text-muted-foreground hover:bg-accent hover:text-foreground",
             )}
           >
             <Icon className="size-4" />

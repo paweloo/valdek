@@ -23,7 +23,10 @@ function Home() {
   const seeded = useValdek((s) => s.seeded);
   const participants = allParticipants.filter((p) => p.active);
   const transfers = allTransfers.filter((t) => !t.ignored && t.direction !== "out");
-  const statuses = participants.map((p) => ({ p, ...monthStatusFor(p, selectedMonth, matches, manual) }));
+  const statuses = participants.map((p) => ({
+    p,
+    ...monthStatusFor(p, selectedMonth, matches, manual),
+  }));
   const paid = statuses.filter((s) => s.status === "paid" || s.status === "over").length;
   const review = statuses.filter((s) => s.status === "review" || s.status === "partial").length;
   const unpaidPeople = statuses.filter((s) => s.status === "unpaid");
@@ -36,37 +39,70 @@ function Home() {
     <AppShell>
       <div className="mx-auto flex max-w-6xl flex-col gap-8">
         <header>
-          <p className="text-xs tracking-[0.2em] text-muted-foreground uppercase">Sezon w kasie</p>
+          <p className="text-xs tracking-[0.2em] text-muted-foreground uppercase">Statystyki</p>
           <h1 className="font-display mt-1 text-4xl md:text-5xl">{monthLabel(selectedMonth)}</h1>
-          <p className="mt-2 max-w-xl text-sm text-muted-foreground">
-            Wgraj ewidencję z Excela i listę operacji z mBanku. Valdek zestawi nazwiska, grupy i kwoty — a kwiatki z tytułów zostawi do Twojej decyzji.
-          </p>
+          {/* <p className="mt-2 max-w-xl text-sm text-muted-foreground">
+            Wgraj ewidencję z Excela i listę operacji z mBanku. Valdek zestawi nazwiska, grupy i
+            kwoty — a kwiatki z tytułów zostawi do Twojej decyzji.
+          </p> */}
         </header>
         {seedBanner && seeded ? (
           <div className="flex items-start justify-between gap-4 rounded-xl bg-secondary px-4 py-3">
             <p className="text-sm text-muted-foreground">
-              To podgląd na Twojej ewidencji (Zajkowie, grupy seniorów). Wgraj Excel i PDF z mBanku — nic nie wychodzi z tej przeglądarki. Eksport wraca do Twojego pliku z checkboxami.
+              To podgląd na Twojej ewidencji (Zajkowie, grupy seniorów). Wgraj Excel i PDF z mBanku
+              — nic nie wychodzi z tej przeglądarki. Eksport wraca do Twojego pliku z checkboxami.
             </p>
-            <Button variant="ghost" size="icon" className="size-9 shrink-0" onClick={dismissSeedBanner} aria-label="Zamknij">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="size-9 shrink-0"
+              onClick={dismissSeedBanner}
+              aria-label="Zamknij"
+            >
               <X className="size-4" />
             </Button>
           </div>
         ) : null}
         <section className="grid gap-3 sm:grid-cols-3">
-          <Stat label="Wpłacono" value={`${paid} / ${participants.length}`} hint={formatPln(received)} />
+          <Stat
+            label="Wpłacono"
+            value={`${paid} / ${participants.length}`}
+            hint={formatPln(received)}
+          />
           <Stat label="Należność miesiąca" value={formatPln(expected)} hint="suma stawek" />
-          <Stat label="Do wyjaśnienia" value={String(issues.length + unmatched.length)} hint={`${review} osób · ${unmatched.length} przelewów`} />
+          <Stat
+            label="Do wyjaśnienia"
+            value={String(issues.length + unmatched.length)}
+            hint={`${review} osób · ${unmatched.length} przelewów`}
+          />
         </section>
         <section className="grid gap-4 md:grid-cols-3">
-          <ActionCard to="/uczestnicy" icon={FileSpreadsheet} title="Lista uczestników" copy="Excel ewidencji: nazwisko i imię, stawka, kolumny SENIORZY / SENIORZY II / TANIEC SENIORZY i miesiące TAK/NIE." />
-          <ActionCard to="/wyciag" icon={FileText} title="Wyciąg z banku" copy="Lista operacji z mBanku za miesiąc. Wpłaty przychodzące idą do kasy, zakupy kartą Valdek pomija." />
-          <ActionCard to="/rozliczenie" icon={Scale} title="Rozliczenie" copy="Automatyczne dopasowanie plus ręczne potwierdzenia, gdy rodzic wpisze coś po swojemu." />
+          <ActionCard
+            to="/uczestnicy"
+            icon={FileSpreadsheet}
+            title="Lista uczestników"
+            copy="Excel ewidencji"
+          />
+          <ActionCard
+            to="/wyciag"
+            icon={FileText}
+            title="Wyciąg z banku"
+            copy="Lista operacji z mBanku za miesiąc. Wpłaty przychodzące idą do kasy, zakupy kartą Valdek pomija."
+          />
+          <ActionCard
+            to="/rozliczenie"
+            icon={Scale}
+            title="Rozliczenie"
+            copy="Automatyczne dopasowanie plus ręczne potwierdzenia."
+          />
         </section>
         <section className="grid gap-4 lg:grid-cols-2">
           <Card>
             <CardHeader>
               <CardTitle>Bez wpłaty</CardTitle>
-              <CardDescription>Osoby, których nie ma na wyciągu w {monthLabel(selectedMonth)}.</CardDescription>
+              <CardDescription>
+                Osoby, których nie ma na wyciągu w {monthLabel(selectedMonth)}.
+              </CardDescription>
             </CardHeader>
             <CardContent>
               {unpaidPeople.length === 0 ? (
@@ -76,8 +112,12 @@ function Home() {
                   {unpaidPeople.slice(0, 8).map(({ p, expected: exp }) => (
                     <li key={p.id} className="flex items-center justify-between gap-3 py-3">
                       <div>
-                        <div className="text-sm font-medium">{fullName(p.firstName, p.lastName)}</div>
-                        <div className="text-xs text-muted-foreground">{groups.find((g) => g.id === p.groupId)?.name}</div>
+                        <div className="text-sm font-medium">
+                          {fullName(p.firstName, p.lastName)}
+                        </div>
+                        <div className="text-xs text-muted-foreground">
+                          {groups.find((g) => g.id === p.groupId)?.name}
+                        </div>
                       </div>
                       <div className="tabular text-sm text-muted-foreground">{formatPln(exp)}</div>
                     </li>
@@ -88,8 +128,10 @@ function Home() {
           </Card>
           <Card>
             <CardHeader>
-              <CardTitle>Kwiatki z wyciągu</CardTitle>
-              <CardDescription>Zła kwota, inny miesiąc, albo tytuł, którego kasa nie jest pewna.</CardDescription>
+              <CardTitle>Nierozpoznane przelewy</CardTitle>
+              <CardDescription>
+                Zła kwota, inny miesiąc, albo tytuł, którego kasa nie jest pewna.
+              </CardDescription>
             </CardHeader>
             <CardContent>
               {issues.length === 0 && unmatched.length === 0 ? (
@@ -101,10 +143,22 @@ function Home() {
                     return (
                       <li key={m.id} className="flex items-center justify-between gap-3 py-3">
                         <div className="min-w-0">
-                          <div className="truncate text-sm font-medium">{person ? fullName(person.firstName, person.lastName) : "?"}</div>
-                          <div className="truncate text-xs text-muted-foreground">{m.reasons[0]}</div>
+                          <div className="truncate text-sm font-medium">
+                            {person ? fullName(person.firstName, person.lastName) : "?"}
+                          </div>
+                          <div className="truncate text-xs text-muted-foreground">
+                            {m.reasons[0]}
+                          </div>
                         </div>
-                        <StatusBadge status={m.amountIssue === "ok" ? "review" : m.amountIssue === "partial" ? "partial" : "over"} />
+                        <StatusBadge
+                          status={
+                            m.amountIssue === "ok"
+                              ? "review"
+                              : m.amountIssue === "partial"
+                                ? "partial"
+                                : "over"
+                          }
+                        />
                       </li>
                     );
                   })}
@@ -143,7 +197,10 @@ function ActionCard({
   copy: string;
 }) {
   return (
-    <Link to={to} className="group flex flex-col rounded-xl bg-card p-5 shadow-[var(--shadow-border)] transition-colors hover:bg-accent">
+    <Link
+      to={to}
+      className="group flex flex-col rounded-xl bg-card p-5 shadow-[var(--shadow-border)] transition-colors hover:bg-accent"
+    >
       <Icon className="size-5 text-muted-foreground" />
       <h2 className="font-display mt-4 text-2xl">{title}</h2>
       <p className="mt-2 text-sm text-muted-foreground">{copy}</p>
