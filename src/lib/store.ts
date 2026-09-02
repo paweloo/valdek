@@ -197,7 +197,6 @@ export const useValdek = create<ValdekState>()(
         set({
           statements: [...get().statements.filter((s) => !replacedIds.has(s.id)), statement],
           transfers: [...get().transfers.filter((t) => !replacedIds.has(t.statementId)), ...transfers],
-          selectedMonth: statement.month || get().selectedMonth,
           seeded: true,
           seedBanner: false,
         });

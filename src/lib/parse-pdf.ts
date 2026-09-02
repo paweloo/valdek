@@ -1,4 +1,4 @@
-import { detectStatementMonth, parseTransfersFromText, reconstructLines } from "./parse-text";
+import { parseTransfersFromText, reconstructLines } from "./parse-text";
 import { uid } from "./utils";
 import type { Statement, Transfer } from "./types";
 
@@ -40,7 +40,6 @@ export async function parseBankPdf(
   }
   const text = allLines.join("\n");
   const transfers = parseTransfersFromText(text, statementId);
-  const detectedMonth = detectStatementMonth(text) ?? month;
   const incoming = transfers.filter((t) => t.direction !== "out" && !t.ignored);
   const letters = text.replace(/\s/g, "").length;
   const warning =
@@ -55,7 +54,7 @@ export async function parseBankPdf(
     statement: {
       id: statementId,
       fileName,
-      month: detectedMonth,
+      month,
       importedAt: new Date().toISOString(),
       transferCount: incoming.length,
       warning,
