@@ -1,6 +1,7 @@
 import { createRootRoute, HeadContent, Outlet, Scripts } from "@tanstack/react-router";
 import { AuthProvider } from "@/lib/auth/provider";
 import { PreviewHostBridge } from "@/components/preview-host-bridge";
+import { TooltipProvider } from "@/components/ui/tooltip";
 import { HydrateStore } from "@/components/valdek/hydrate-store";
 import { Toaster } from "@/components/ui/sonner";
 import appCss from "../styles.css?url";
@@ -13,7 +14,11 @@ export const Route = createRootRoute({
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
       { title: APP_NAME },
-      { name: "theme-color", content: "#6b2d2a" },
+      {
+        name: "description",
+        content: "Valdek — kasa teatralna. Porównuje wyciąg bankowy z listą uczestników. Dane zostają na tym komputerze.",
+      },
+      { name: "theme-color", content: "#0e0c0b" },
     ],
     links: [
       { rel: "icon", type: "image/svg+xml", href: "/favicon.svg" },
@@ -21,9 +26,10 @@ export const Route = createRootRoute({
       { rel: "manifest", href: "/__grok/manifest.webmanifest" },
       { rel: "apple-touch-icon", href: "/__grok/icon-180.png" },
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
+      { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
       {
         rel: "stylesheet",
-        href: "https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Source+Sans+3:wght@400;500;600&display=swap",
+        href: "https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Instrument+Serif:ital@0;1&family=Outfit:wght@360;420;500;580&display=swap",
       },
     ],
   }),
@@ -32,13 +38,15 @@ export const Route = createRootRoute({
       <head>
         <HeadContent />
       </head>
-      <body>
+      <body className="bg-background text-foreground">
         <PreviewHostBridge />
         <AuthProvider>
-          <HydrateStore>
-            <Outlet />
-            <Toaster />
-          </HydrateStore>
+          <TooltipProvider delayDuration={200}>
+            <HydrateStore>
+              <Outlet />
+              <Toaster />
+            </HydrateStore>
+          </TooltipProvider>
         </AuthProvider>
         <Scripts />
       </body>

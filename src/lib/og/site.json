@@ -1,4 +1,6 @@
 {
   "name": "Valdek",
-  "description": "Kasa teatralna — ewidencja wpłat z Excela i wyciągu mBanku"
+  "title": "Valdek",
+  "description": "Kasa teatralna — ewidencja wpłat z Excela i wyciągu mBanku",
+  "card": "custom"
 }
