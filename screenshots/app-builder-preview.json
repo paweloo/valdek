@@ -1,0 +1,36 @@
+{
+  "url": "http://127.0.0.1:8080/",
+  "viewports": {
+    "desktop": {
+      "width": 1280,
+      "height": 800,
+      "status": 200,
+      "title": "Valdek",
+      "hasCanvas": false,
+      "bodyTextLen": 1171,
+      "bodyTextHash": "65ab7a1ca6071f1eabbd031bd63e2de5b6b2685525781cc8c8563b4da1b63eef",
+      "bodyTextPrefix": "V Valdek KASA TEATRALNA Pulpit Uczestnicy Wyciąg Rozliczenie Pli",
+      "horizontalOverflow": false,
+      "consoleErrors": [],
+      "pageErrors": [],
+      "screenshot": "/workspace/screenshots/app-builder-preview.png"
+    },
+    "mobile": {
+      "width": 390,
+      "height": 844,
+      "status": 200,
+      "title": "Valdek",
+      "hasCanvas": false,
+      "bodyTextLen": 1102,
+      "bodyTextHash": "b20b6a6d4ca54997ca986c3fde7542e39db2d6937a0a40b4ebb05b778ae92185",
+      "bodyTextPrefix": "V Valdek KASA TEATRALNA wrzesień 2026 SEZON W KASIE wrzesień 202",
+      "horizontalOverflow": false,
+      "consoleErrors": [],
+      "pageErrors": [],
+      "screenshot": "/workspace/screenshots/app-builder-preview-mobile.png"
+    }
+  },
+  "brandWarnings": [],
+  "authWarnings": [],
+  "verdictFile": "/workspace/screenshots/app-builder-preview.json"
+}

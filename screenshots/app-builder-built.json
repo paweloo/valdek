@@ -1,0 +1,41 @@
+{
+  "url": "http://127.0.0.1:8081/",
+  "viewports": {
+    "desktop": {
+      "width": 1280,
+      "height": 800,
+      "status": 200,
+      "title": "Valdek",
+      "hasCanvas": false,
+      "bodyTextLen": 23,
+      "bodyTextHash": "09f15834adc6ae5511e05c24f0bdff51379ec4d0393bfed137158a36d0bc9577",
+      "bodyTextPrefix": "Valdek Otwieranie kasy…",
+      "horizontalOverflow": false,
+      "consoleErrors": [],
+      "pageErrors": [],
+      "screenshot": "/workspace/screenshots/app-builder-built.png"
+    },
+    "mobile": {
+      "width": 390,
+      "height": 844,
+      "status": 200,
+      "title": "Valdek",
+      "hasCanvas": false,
+      "bodyTextLen": 23,
+      "bodyTextHash": "09f15834adc6ae5511e05c24f0bdff51379ec4d0393bfed137158a36d0bc9577",
+      "bodyTextPrefix": "Valdek Otwieranie kasy…",
+      "horizontalOverflow": false,
+      "consoleErrors": [],
+      "pageErrors": [],
+      "screenshot": "/workspace/screenshots/app-builder-built-mobile.png"
+    }
+  },
+  "brandWarnings": [],
+  "authWarnings": [],
+  "verdictFile": "/workspace/screenshots/app-builder-built.json",
+  "divergesFromBaseline": true,
+  "baselineReasons": [
+    "desktop: body text collapsed (1171 -> 23 chars)",
+    "mobile: body text collapsed (1102 -> 23 chars)"
+  ]
+}
