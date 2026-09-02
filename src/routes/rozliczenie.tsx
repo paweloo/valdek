@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { Check, Link2, Split, Unlink } from "lucide-react";
+import { Ban, Check, Split, Unlink } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { AppShell } from "@/components/valdek/app-shell";
 import { StatusBadge } from "@/components/valdek/status-badge";
@@ -40,6 +40,7 @@ function RozliczeniePage() {
   const confirmMatch = useValdek((s) => s.confirmMatch);
   const unmatchTransfer = useValdek((s) => s.unmatchTransfer);
   const splitTwoMonths = useValdek((s) => s.splitTwoMonths);
+  const ignoreTransfer = useValdek((s) => s.ignoreTransfer);
   const [query, setQuery] = useState("");
   const participants = allParticipants.filter((p) => p.active);
   const visibleTransfers = transfers.filter((t) => !t.ignored && t.direction !== "out");
@@ -94,6 +95,7 @@ function RozliczeniePage() {
               matches={matches}
               onAssign={assignTransfer}
               onConfirm={confirmMatch}
+              onIgnore={(id) => ignoreTransfer(id, true)}
             />
             <TransferGroup
               title="Do potwierdzenia"
@@ -109,6 +111,7 @@ function RozliczeniePage() {
               onConfirm={confirmMatch}
               onUnmatch={unmatchTransfer}
               onSplit={splitTwoMonths}
+              onIgnore={(id) => ignoreTransfer(id, true)}
             />
             <TransferGroup
               title="Zaksięgowane"
@@ -164,6 +167,7 @@ function TransferGroup({
   onConfirm,
   onUnmatch,
   onSplit,
+  onIgnore,
 }: {
   title: string;
   empty: string;
@@ -178,6 +182,7 @@ function TransferGroup({
   onConfirm?: (transferId: string) => void;
   onUnmatch?: (transferId: string) => void;
   onSplit?: (transferId: string) => void;
+  onIgnore?: (transferId: string) => void;
 }) {
   return (
     <section>
@@ -200,6 +205,7 @@ function TransferGroup({
               onConfirm={onConfirm}
               onUnmatch={onUnmatch}
               onSplit={onSplit}
+              onIgnore={onIgnore}
             />
           ))}
         </ul>
@@ -220,6 +226,7 @@ function TransferCard({
   onConfirm,
   onUnmatch,
   onSplit,
+  onIgnore,
 }: {
   transfer: Transfer;
   related: PaymentMatch[];
@@ -232,6 +239,7 @@ function TransferCard({
   onConfirm?: (transferId: string) => void;
   onUnmatch?: (transferId: string) => void;
   onSplit?: (transferId: string) => void;
+  onIgnore?: (transferId: string) => void;
 }) {
   const primary = related[0];
   const titleMonth = detectMonthsInText(transfer.title, seasonStartYear)[0];
@@ -336,10 +344,11 @@ function TransferCard({
               <Button type="button" size="sm" variant="ghost" onClick={() => onUnmatch(transfer.id)}>
                 <Unlink /> Odłącz
               </Button>
-            ) : onAssign && !primary ? (
-              <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
-                <Link2 className="size-3" /> wybierz osobę i miesiąc
-              </span>
+            ) : null}
+            {onIgnore ? (
+              <Button type="button" size="sm" variant="ghost" onClick={() => onIgnore(transfer.id)}>
+                <Ban /> Pomiń
+              </Button>
             ) : null}
           </div>
         </div>
