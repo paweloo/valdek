@@ -6,35 +6,8 @@ const NAME_HEADERS = ["imie i nazwisko", "imię i nazwisko", "uczestnik", "osoba
 const FIRST_HEADERS = ["imie", "imię", "first", "firstname"];
 const LAST_HEADERS = ["nazwisko", "last", "lastname"];
 const GROUP_HEADERS = ["grupa", "zajecia", "zajęcia", "group", "pracownia", "sekcja"];
-const FEE_HEADERS = [
-  "kwota",
-  "oplata",
-  "opłata",
-  "stawka",
-  "fee",
-  "naleznosc",
-  "należność",
-  "pln",
-  "miesiecznie",
-  "miesięcznie",
-];
-const NON_GROUP_HEADERS = new Set([
-  "regulamin",
-  "zgoda",
-  "rodo",
-  "uwagi",
-  "notes",
-  "email",
-  "e mail",
-  "telefon",
-  "tel",
-  "adres",
-  "pesel",
-  "lp",
-  "nr",
-  "id",
-]);
-
+const FEE_HEADERS = ["kwota", "oplata", "opłata", "stawka", "fee", "naleznosc", "należność", "pln", "miesiecznie", "miesięcznie"];
+const NON_GROUP_HEADERS = new Set(["regulamin", "zgoda", "rodo", "uwagi", "notes", "email", "e mail", "telefon", "tel", "adres", "pesel", "lp", "nr", "id"]);
 const TRUE_CELLS = new Set(["tak", "ok", "wplacono", "yes", "x", "v", "true", "prawda", "1"]);
 const FALSE_CELLS = new Set(["nie", "brak", "0", "n", "no", "false", "falsz"]);
 
@@ -84,7 +57,6 @@ function detectGroupFlags(headers: string[], rows: string[][], mapping: ExcelMap
     if (idx != null) used.add(idx);
   }
   for (const idx of Object.values(mapping.months)) used.add(idx);
-
   const flags: GroupFlagColumn[] = [];
   headers.forEach((header, i) => {
     if (used.has(i)) return;
@@ -111,18 +83,13 @@ export function guessMapping(headers: string[], seasonYear: number, rows: string
   if (full >= 0 && first < 0) mapping.fullName = full;
   if (group >= 0) mapping.group = group;
   if (fee >= 0) mapping.fee = fee;
-
   headers.forEach((h, i) => {
     const month = headerLooksLikeMonth(h);
     if (!month) return;
     const key = month.includes("-") ? month : monthKeyFor(Number(month), seasonYear);
     mapping.months[key] = i;
   });
-
-  if (mapping.firstName == null && mapping.fullName == null) {
-    mapping.fullName = 0;
-  }
-
+  if (mapping.firstName == null && mapping.fullName == null) mapping.fullName = 0;
   if (rows.length) {
     mapping.groupFlags = detectGroupFlags(headers, rows, mapping);
     if (mapping.fullName != null) {
@@ -130,42 +97,34 @@ export function guessMapping(headers: string[], seasonYear: number, rows: string
       mapping.nameOrder = guessNameOrder(names);
     }
   }
-
   return mapping;
 }
 
-export function interpretExcelRow(
-  row: string[],
-  mapping: ExcelMapping,
-): { firstName: string; lastName: string; groupName: string; fee: number } | null {
+export function interpretExcelRow(row: string[], mapping: ExcelMapping) {
   const first = mapping.firstName != null ? row[mapping.firstName] ?? "" : "";
   const last = mapping.lastName != null ? row[mapping.lastName] ?? "" : "";
   const full = mapping.fullName != null ? row[mapping.fullName] ?? "" : "";
   const order: NameOrder = mapping.nameOrder ?? "last-first";
   const names = first || last ? { firstName: first.trim(), lastName: last.trim() } : splitFullName(full, order);
   if (!names.firstName && !names.lastName) return null;
-
   let groupName = "";
   if (mapping.groupFlags?.length) {
     const hits = mapping.groupFlags.filter((g) => isTruthyCell(row[g.column] ?? "")).map((g) => g.name);
     groupName = hits.join(" + ");
   }
-  if (!groupName && mapping.group != null) {
-    groupName = (row[mapping.group] ?? "").trim();
-  }
+  if (!groupName && mapping.group != null) groupName = (row[mapping.group] ?? "").trim();
   if (!groupName) groupName = "Bez grupy";
-
   const feeRaw = mapping.fee != null ? row[mapping.fee] ?? "" : "";
   const fee = Number(String(feeRaw).replace(",", ".").replace(/\s/g, "")) || 0;
   return { ...names, groupName, fee };
 }
 
-export async function readSpreadsheet(file: File): Promise<{ sheetName: string; headers: string[]; rows: string[][] }> {
+export async function readSpreadsheet(file: File) {
   const buf = await file.arrayBuffer();
   return readSpreadsheetBuffer(buf);
 }
 
-export function readSpreadsheetBuffer(buf: ArrayBuffer | Uint8Array | Buffer) {
+export function readSpreadsheetBuffer(buf: ArrayBuffer | Uint8Array) {
   const wb = XLSX.read(buf, { type: "array", cellDates: true });
   const sheetName = wb.SheetNames[0];
   const sheet = wb.Sheets[sheetName];
@@ -173,19 +132,9 @@ export function readSpreadsheetBuffer(buf: ArrayBuffer | Uint8Array | Buffer) {
   const matrix = XLSX.utils.sheet_to_json(sheet, { header: 1, raw: false, defval: "" }) as unknown[][];
   const cleaned = matrix.map((row) => row.map(cell)).filter((row) => row.some((c) => c.length > 0));
   if (!cleaned.length) throw new Error("Nie znaleziono wierszy w arkuszu.");
-  const headers = cleaned[0];
-  const rows = cleaned.slice(1);
-  return { sheetName, headers, rows };
+  return { sheetName, headers: cleaned[0], rows: cleaned.slice(1) };
 }
 
-export function previewSpreadsheet(
-  headers: string[],
-  rows: string[][],
-  seasonYear: number,
-): ExcelPreview {
-  return {
-    headers,
-    rows: rows.slice(0, 8),
-    mapping: guessMapping(headers, seasonYear, rows),
-  };
+export function previewSpreadsheet(headers: string[], rows: string[][], seasonYear: number): ExcelPreview {
+  return { headers, rows: rows.slice(0, 8), mapping: guessMapping(headers, seasonYear, rows) };
 }

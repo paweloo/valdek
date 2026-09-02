@@ -1,13 +1,6 @@
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import type { ExcelMapping, NameOrder } from "@/lib/types";
@@ -31,6 +24,7 @@ export function ExcelImportDialog({
   const seasonStartYear = useValdek((s) => s.seasonStartYear);
   const seedBanner = useValdek((s) => s.seedBanner);
   const importRows = useValdek((s) => s.importRows);
+  const setSourceWorkbook = useValdek((s) => s.setSourceWorkbook);
   const [headers, setHeaders] = useState<string[]>([]);
   const [rows, setRows] = useState<string[][]>([]);
   const [mapping, setMapping] = useState<ExcelMapping>({ months: {} });
@@ -62,14 +56,15 @@ export function ExcelImportDialog({
   }, [file, open, seasonStartYear, onOpenChange, seedBanner]);
 
   const setField = (key: "fullName" | "firstName" | "lastName" | "group" | "fee", value: string) => {
-    setMapping((m) => ({
-      ...m,
-      [key]: value === NONE ? undefined : Number(value),
-    }));
+    setMapping((m) => ({ ...m, [key]: value === NONE ? undefined : Number(value) }));
   };
 
-  const apply = () => {
+  const apply = async () => {
     const count = importRows(rows, mapping, mode);
+    if (file) {
+      const buf = await file.arrayBuffer();
+      if (/\.xlsx$/i.test(file.name)) setSourceWorkbook(buf, file.name);
+    }
     toast.success(`Wczytano ${count} osób`);
     setReady(false);
     onOpenChange(false);
@@ -88,22 +83,14 @@ export function ExcelImportDialog({
         <DialogHeader>
           <DialogTitle>Mapowanie kolumn</DialogTitle>
           <DialogDescription>
-            Valdek czyta listę z grupami jako kolumny TAK/NIE i miesiącami. Popraw, jeśli nagłówki są inne.
+            Valdek czyta listę z grupami jako kolumny TAK/NIE i miesiącami. Przy eksporcie wraca do tego samego pliku — checkboxy i style zostają.
           </DialogDescription>
         </DialogHeader>
         <div className="grid gap-4 sm:grid-cols-2">
-          <MapSelect
-            label="Imię i nazwisko (jedna kolumna)"
-            value={mapping.fullName}
-            options={colOptions}
-            onChange={(v) => setField("fullName", v)}
-          />
+          <MapSelect label="Imię i nazwisko (jedna kolumna)" value={mapping.fullName} options={colOptions} onChange={(v) => setField("fullName", v)} />
           <div className="grid gap-2">
             <Label>Kolejność w kolumnie</Label>
-            <Select
-              value={mapping.nameOrder ?? "last-first"}
-              onValueChange={(v) => setMapping((m) => ({ ...m, nameOrder: v as NameOrder }))}
-            >
+            <Select value={mapping.nameOrder ?? "last-first"} onValueChange={(v) => setMapping((m) => ({ ...m, nameOrder: v as NameOrder }))}>
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
@@ -113,30 +100,10 @@ export function ExcelImportDialog({
               </SelectContent>
             </Select>
           </div>
-          <MapSelect
-            label="Imię"
-            value={mapping.firstName}
-            options={colOptions}
-            onChange={(v) => setField("firstName", v)}
-          />
-          <MapSelect
-            label="Nazwisko"
-            value={mapping.lastName}
-            options={colOptions}
-            onChange={(v) => setField("lastName", v)}
-          />
-          <MapSelect
-            label="Grupa (jedna kolumna)"
-            value={mapping.group}
-            options={colOptions}
-            onChange={(v) => setField("group", v)}
-          />
-          <MapSelect
-            label="Stawka"
-            value={mapping.fee}
-            options={colOptions}
-            onChange={(v) => setField("fee", v)}
-          />
+          <MapSelect label="Imię" value={mapping.firstName} options={colOptions} onChange={(v) => setField("firstName", v)} />
+          <MapSelect label="Nazwisko" value={mapping.lastName} options={colOptions} onChange={(v) => setField("lastName", v)} />
+          <MapSelect label="Grupa (jedna kolumna)" value={mapping.group} options={colOptions} onChange={(v) => setField("group", v)} />
+          <MapSelect label="Stawka" value={mapping.fee} options={colOptions} onChange={(v) => setField("fee", v)} />
           <div className="grid gap-2">
             <Label>Jak wczytać</Label>
             <Select value={mode} onValueChange={(v) => setMode(v as "merge" | "replace")}>
@@ -151,9 +118,7 @@ export function ExcelImportDialog({
           </div>
         </div>
         {groupNames.length > 0 ? (
-          <p className="text-sm text-muted-foreground">
-            Grupy z kolumn TAK/NIE: {groupNames.join(" · ")}
-          </p>
+          <p className="text-sm text-muted-foreground">Grupy z kolumn TAK/NIE: {groupNames.join(" · ")}</p>
         ) : null}
         <div className="overflow-x-auto rounded-lg bg-secondary p-3">
           {preview.length ? (
@@ -176,7 +141,7 @@ export function ExcelImportDialog({
           <Button variant="ghost" onClick={() => onOpenChange(false)}>
             Anuluj
           </Button>
-          <Button onClick={apply} disabled={!ready || preview.length === 0}>
+          <Button onClick={() => void apply()} disabled={!ready || preview.length === 0}>
             Wczytaj listę
           </Button>
         </DialogFooter>

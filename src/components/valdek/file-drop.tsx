@@ -16,24 +16,21 @@ export function FileDrop({
 }) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [over, setOver] = useState(false);
-
-  const onDrop = (e: DragEvent) => {
-    e.preventDefault();
-    setOver(false);
-    const file = e.dataTransfer.files?.[0];
-    if (file) onFile(file);
-  };
-
   return (
     <div
-      onDragOver={(e) => {
+      onDragOver={(e: DragEvent) => {
         e.preventDefault();
         setOver(true);
       }}
       onDragLeave={() => setOver(false)}
-      onDrop={onDrop}
+      onDrop={(e: DragEvent) => {
+        e.preventDefault();
+        setOver(false);
+        const file = e.dataTransfer.files?.[0];
+        if (file) onFile(file);
+      }}
       className={cn(
-        "relative flex min-h-44 w-full flex-col items-center justify-center overflow-hidden rounded-xl bg-card px-6 py-8 text-center shadow-[var(--shadow-border)] transition-[background-color,box-shadow] duration-150",
+        "relative flex min-h-44 w-full flex-col items-center justify-center overflow-hidden rounded-xl bg-card px-6 py-8 text-center shadow-[var(--shadow-border)]",
         over && "bg-accent",
         className,
       )}

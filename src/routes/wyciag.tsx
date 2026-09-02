@@ -35,11 +35,7 @@ function WyciagPage() {
     addStatement(statement, nextTransfers);
     const incoming = nextTransfers.filter((t) => t.direction !== "out" && !t.ignored).length;
     const skipped = nextTransfers.length - incoming;
-    toast.success(
-      skipped > 0
-        ? `Wczytano ${incoming} wpłat, pominięto ${skipped} wydatków kartą`
-        : `Wczytano ${incoming} wpłat`,
-    );
+    toast.success(skipped > 0 ? `Wczytano ${incoming} wpłat, pominięto ${skipped} wydatków kartą` : `Wczytano ${incoming} wpłat`);
     void navigate({ to: "/rozliczenie" });
   };
 
@@ -105,53 +101,39 @@ function WyciagPage() {
           <p className="text-xs tracking-[0.2em] text-muted-foreground uppercase">Bank</p>
           <h1 className="font-display mt-1 text-4xl">Wyciąg</h1>
           <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
-            Lista operacji mBanku za {monthLabel(selectedMonth)} — ta z kolumnami data, opis, kategoria, kwota. Wpłaty przychodzące idą do rozliczenia, zakupy kartą i BLIK Valdek odkłada na bok. Parsowanie tylko w tej przeglądarce.
+            Lista operacji mBanku za {monthLabel(selectedMonth)}. Wpłaty przychodzące idą do rozliczenia, zakupy kartą Valdek odkłada na bok.
           </p>
         </header>
-
         <div className="grid gap-4 lg:grid-cols-2">
           <FileDrop accept="application/pdf,.pdf" onFile={onPdf} label="Wgraj PDF z wyciągiem">
             <FileText className="mb-3 size-6 text-muted-foreground" />
             <div className="font-display text-2xl">{busy ? "Czytam wyciąg…" : "Upuść PDF"}</div>
-            <p className="mt-2 max-w-sm text-sm text-muted-foreground">
-              Eksport „Lista operacji” z mBanku albo inny PDF z datą, kwotą i tytułem.
-            </p>
+            <p className="mt-2 max-w-sm text-sm text-muted-foreground">Eksport „Lista operacji” z mBanku.</p>
           </FileDrop>
           <div className="rounded-xl bg-card p-5 shadow-[var(--shadow-border)]">
             <div className="font-medium">Wklej historię</div>
-            <p className="mt-1 mb-3 text-sm text-muted-foreground">
-              Gdy PDF jest skanem, skopiuj operacje z bankowości.
-            </p>
-            <Textarea
-              value={paste}
-              onChange={(e) => setPaste(e.target.value)}
-              placeholder={"2026-09-02  JULIA ZAJK SENIORZY WRZESIEŃ  10,00 PLN"}
-            />
+            <p className="mt-1 mb-3 text-sm text-muted-foreground">Gdy PDF jest skanem, skopiuj operacje z bankowości.</p>
+            <Textarea value={paste} onChange={(e) => setPaste(e.target.value)} placeholder={"2026-09-02  JULIA ZAJK SENIORZY WRZESIEŃ  10,00 PLN"} />
             <div className="mt-3 flex flex-wrap gap-2">
               <Button onClick={onPaste} disabled={!paste.trim()}>
                 Wczytaj tekst
               </Button>
-              <Button variant="secondary" onClick={loadSample} disabled={busy}>
+              <Button variant="secondary" onClick={() => void loadSample()} disabled={busy}>
                 Przykładowy wyciąg mBank
               </Button>
             </div>
           </div>
         </div>
-
         {statements.length > 0 ? (
           <section className="flex flex-col gap-3">
             <h2 className="font-display text-2xl">Wczytane pliki</h2>
             <ul className="grid gap-2">
               {statements.map((s) => (
-                <li
-                  key={s.id}
-                  className="flex items-center justify-between gap-3 rounded-lg bg-card px-4 py-3 shadow-[var(--shadow-border)]"
-                >
+                <li key={s.id} className="flex items-center justify-between gap-3 rounded-lg bg-card px-4 py-3 shadow-[var(--shadow-border)]">
                   <div>
                     <div className="text-sm font-medium">{s.fileName}</div>
                     <div className="text-xs text-muted-foreground">
                       {s.transferCount} wpłat · {monthLabel(s.month)}
-                      {s.warning ? ` · ${s.warning}` : ""}
                     </div>
                   </div>
                   <Button variant="ghost" size="icon" aria-label="Usuń wyciąg" onClick={() => removeStatement(s.id)}>
@@ -162,7 +144,6 @@ function WyciagPage() {
             </ul>
           </section>
         ) : null}
-
         <section className="overflow-x-auto rounded-xl bg-card shadow-[var(--shadow-border)]">
           <div className="flex items-center justify-between gap-3 px-4 pt-4">
             <h2 className="font-display text-2xl">Operacje</h2>
@@ -189,20 +170,14 @@ function WyciagPage() {
                     <td className="px-4 py-3 tabular text-muted-foreground">{t.date}</td>
                     <td className="px-3 py-3 tabular">{formatPln(t.amount)}</td>
                     <td className="px-3 py-3">
-                      <input
-                        className="h-9 w-full min-w-48 rounded-sm bg-transparent px-1"
-                        value={t.title}
-                        onChange={(e) => updateTransfer(t.id, { title: e.target.value })}
-                      />
+                      <input className="h-9 w-full min-w-48 rounded-sm bg-transparent px-1" value={t.title} onChange={(e) => updateTransfer(t.id, { title: e.target.value })} />
                     </td>
                     <td className="px-3 py-3">
                       <div className="flex items-center gap-2">
                         {t.ignored ? (
                           <Badge variant="outline">pominięty</Badge>
                         ) : match ? (
-                          <Badge variant={match.kind === "suggested" ? "warn" : "paid"}>
-                            {match.kind === "suggested" ? "do weryfikacji" : "dopasowany"}
-                          </Badge>
+                          <Badge variant={match.kind === "suggested" ? "warn" : "paid"}>{match.kind === "suggested" ? "do weryfikacji" : "dopasowany"}</Badge>
                         ) : (
                           <Badge variant="unpaid">nierozpoznany</Badge>
                         )}
@@ -216,11 +191,7 @@ function WyciagPage() {
               })}
             </tbody>
           </table>
-          {visible.length === 0 ? (
-            <p className="px-4 py-10 text-center text-sm text-muted-foreground">
-              Jeszcze nie ma wpłat za ten sezon.
-            </p>
-          ) : null}
+          {visible.length === 0 ? <p className="px-4 py-10 text-center text-sm text-muted-foreground">Jeszcze nie ma wpłat za ten sezon.</p> : null}
         </section>
       </div>
     </AppShell>

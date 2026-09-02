@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { Download, Plus, Search, Trash2, Upload } from "lucide-react";
+import { Plus, Search, Trash2, Upload, Download } from "lucide-react";
 import { useMemo, useState } from "react";
 import { AppShell } from "@/components/valdek/app-shell";
 import { ExcelImportDialog } from "@/components/valdek/excel-import-dialog";
@@ -8,8 +8,8 @@ import { StatusBadge } from "@/components/valdek/status-badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { buildTemplateWorkbook, buildWorkbook, workbookToBlob } from "@/lib/export-excel";
-import { downloadBlob, formatPln } from "@/lib/utils";
+import { patchEwidencjaWorkbook, peopleFromState } from "@/lib/patch-ewidencja";
+import { b64ToBuffer, downloadBlob, formatPln } from "@/lib/utils";
 import { fullName, monthShort, normalizeText, seasonMonths } from "@/lib/polish";
 import { useValdek } from "@/lib/store";
 import { monthStatusFor } from "@/lib/status";
@@ -22,7 +22,6 @@ function UczestnicyPage() {
   const participants = useValdek((s) => s.participants);
   const groups = useValdek((s) => s.groups);
   const matches = useValdek((s) => s.matches);
-  const transfers = useValdek((s) => s.transfers);
   const manual = useValdek((s) => s.manual);
   const selectedMonth = useValdek((s) => s.selectedMonth);
   const seasonStartYear = useValdek((s) => s.seasonStartYear);
@@ -31,7 +30,8 @@ function UczestnicyPage() {
   const setManual = useValdek((s) => s.setManual);
   const resetAll = useValdek((s) => s.resetAll);
   const seedDemo = useValdek((s) => s.seedDemo);
-
+  const sourceWorkbookB64 = useValdek((s) => s.sourceWorkbookB64);
+  const sourceFileName = useValdek((s) => s.sourceFileName);
   const [query, setQuery] = useState("");
   const [groupId, setGroupId] = useState("all");
   const [editing, setEditing] = useState<Participant | null | undefined>(undefined);
@@ -48,14 +48,21 @@ function UczestnicyPage() {
     });
   }, [participants, query, groupId, groups]);
 
-  const exportList = () => {
-    const wb = buildWorkbook({ seasonStartYear, groups, participants, matches, transfers });
-    downloadBlob(workbookToBlob(wb), `valdek-uczestnicy-${selectedMonth}.xlsx`);
-    toast.success("Zapisano Excel na komputerze");
-  };
-
-  const exportTemplate = () => {
-    downloadBlob(workbookToBlob(buildTemplateWorkbook(seasonStartYear)), "valdek-szablon.xlsx");
+  const exportList = async () => {
+    try {
+      let source: ArrayBuffer | null = sourceWorkbookB64 ? b64ToBuffer(sourceWorkbookB64) : null;
+      if (!source) {
+        const res = await fetch("/ewidencja-szablon.xlsx");
+        if (!res.ok) throw new Error("Brak szablonu ewidencji");
+        source = await res.arrayBuffer();
+      }
+      const people = peopleFromState({ participants, groups, matches, manual, seasonMonths: months });
+      const blob = await patchEwidencjaWorkbook(source, people, seasonStartYear);
+      downloadBlob(blob, sourceFileName || "UCZESTNICY.xlsx");
+      toast.success("Zapisano ten sam plik ewidencji — checkboxy i style zostają");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Nie udało się zapisać Excela");
+    }
   };
 
   return (
@@ -66,15 +73,12 @@ function UczestnicyPage() {
             <p className="text-xs tracking-[0.2em] text-muted-foreground uppercase">Lista</p>
             <h1 className="font-display mt-1 text-4xl">Uczestnicy</h1>
             <p className="mt-2 max-w-xl text-sm text-muted-foreground">
-              To ta sama ewidencja co w Excelu: „Zajk Julia”, stawka, grupy jako kolumny TAK/NIE, miesiące. Tu zmieniasz stawki i oznaczenia — eksport wraca do tego układu.
+              To ta sama ewidencja co w Excelu. Eksport nie robi nowego arkusza — dopisuje stawki i miesiące do wczytanego pliku, z checkboxami i Twoimi stylami.
             </p>
           </div>
           <div className="flex flex-wrap gap-2">
-            <Button variant="outline" onClick={exportTemplate}>
-              <Download /> Szablon
-            </Button>
-            <Button variant="outline" onClick={exportList}>
-              <Download /> Eksport
+            <Button variant="outline" onClick={() => void exportList()}>
+              <Download /> Zapisz Excel
             </Button>
             <label>
               <input
@@ -98,16 +102,10 @@ function UczestnicyPage() {
             </Button>
           </div>
         </header>
-
         <div className="flex flex-col gap-3 sm:flex-row">
           <div className="relative flex-1">
             <Search className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
-            <Input
-              className="pl-9"
-              placeholder="Szukaj nazwiska albo grupy"
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-            />
+            <Input className="pl-9" placeholder="Szukaj nazwiska albo grupy" value={query} onChange={(e) => setQuery(e.target.value)} />
           </div>
           <Select value={groupId} onValueChange={setGroupId}>
             <SelectTrigger className="sm:w-56">
@@ -123,7 +121,6 @@ function UczestnicyPage() {
             </SelectContent>
           </Select>
         </div>
-
         <div className="overflow-x-auto rounded-xl bg-card shadow-[var(--shadow-border)]">
           <table className="w-full min-w-[720px] text-left text-sm">
             <thead>
@@ -141,68 +138,47 @@ function UczestnicyPage() {
             </thead>
             <tbody>
               {filtered.map((p) => {
-                const current = monthStatusFor(p, selectedMonth, matches, manual);
+                const st = monthStatusFor(p, selectedMonth, matches, manual);
                 return (
                   <tr key={p.id} className="border-b border-border/70 last:border-0">
-                    <td className="sticky left-0 bg-card px-4 py-3">
-                      <button type="button" className="text-left" onClick={() => setEditing(p)}>
-                        <div className="font-medium">{fullName(p.firstName, p.lastName)}</div>
-                        {p.notes ? <div className="text-xs text-muted-foreground">{p.notes}</div> : null}
+                    <td className="sticky left-0 bg-card px-4 py-2">
+                      <button className="text-left font-medium" onClick={() => setEditing(p)}>
+                        {fullName(p.firstName, p.lastName)}
                       </button>
                     </td>
-                    <td className="px-3 py-3 text-muted-foreground">
-                      {groups.find((g) => g.id === p.groupId)?.name}
-                    </td>
-                    <td className="px-3 py-3">
+                    <td className="px-3 py-2 text-muted-foreground">{groups.find((g) => g.id === p.groupId)?.name}</td>
+                    <td className="px-3 py-2">
                       <input
-                        className="h-9 w-20 rounded-sm bg-secondary px-2 tabular"
+                        className="h-9 w-20 rounded-sm bg-transparent px-1 tabular"
                         value={p.monthlyFee}
-                        onChange={(e) =>
-                          updateParticipant(p.id, { monthlyFee: Number(e.target.value.replace(",", ".")) || 0 })
-                        }
+                        onChange={(e) => updateParticipant(p.id, { monthlyFee: Number(e.target.value) || 0 })}
                       />
                     </td>
                     {months.map((m) => {
-                      const st = monthStatusFor(p, m, matches, manual);
-                      const selected = m === selectedMonth;
+                      const cell = monthStatusFor(p, m, matches, manual);
+                      const mark = cell.status === "paid" || cell.status === "over" ? "paid" : cell.status === "unpaid" ? null : cell.status;
                       return (
-                        <td key={m} className="px-1 py-2 text-center">
+                        <td key={m} className="px-2 py-2 text-center">
                           <button
-                            type="button"
-                            title={`${monthShort(m)} — ${st.status}`}
-                            onClick={() => {
-                              if (st.status === "unpaid") {
-                                setManual(p.id, m, { status: "paid", amount: p.monthlyFee });
-                              } else {
-                                setManual(p.id, m, null);
-                              }
-                            }}
-                            className={`h-9 min-w-9 rounded-sm px-1 text-[11px] tabular ${
-                              selected ? "shadow-[var(--shadow-border)]" : ""
-                            } ${
-                              st.status === "paid"
-                                ? "text-paid"
-                                : st.status === "unpaid"
-                                  ? "text-muted-foreground"
-                                  : "text-warn"
-                            }`}
+                            className="text-xs text-muted-foreground"
+                            onClick={() =>
+                              setManual(
+                                p.id,
+                                m,
+                                mark === "paid" ? { status: "unpaid" } : { status: "paid", amount: p.monthlyFee },
+                              )
+                            }
                           >
-                            {st.status === "paid" ? "tak" : st.status === "unpaid" ? "—" : "?"}
+                            {cell.status === "unpaid" ? "—" : cell.status === "paid" ? "✓" : "?"}
                           </button>
                         </td>
                       );
                     })}
-                    <td className="px-3 py-3">
-                      <div className="flex items-center justify-end gap-1">
-                        <StatusBadge status={current.status} />
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="size-9"
-                          aria-label="Usuń"
-                          onClick={() => removeParticipant(p.id)}
-                        >
-                          <Trash2 className="size-4" />
+                    <td className="px-3 py-2">
+                      <div className="flex items-center gap-2">
+                        <StatusBadge status={st.status} />
+                        <Button variant="ghost" size="sm" onClick={() => removeParticipant(p.id)}>
+                          <Trash2 className="size-4" /> Usuń
                         </Button>
                       </div>
                     </td>
@@ -211,43 +187,21 @@ function UczestnicyPage() {
               })}
             </tbody>
           </table>
-          {filtered.length === 0 ? (
-            <p className="px-4 py-10 text-center text-sm text-muted-foreground">Brak osób na liście.</p>
-          ) : null}
         </div>
-
-        <div className="flex flex-wrap items-center justify-between gap-3 text-xs text-muted-foreground">
+        <div className="flex flex-wrap gap-2 text-xs text-muted-foreground">
           <span>
-            {filtered.length} osób · klik w miesiąc oznacza wpłatę ręcznie · {formatPln(
-              filtered.reduce((s, p) => s + p.monthlyFee, 0),
-            )}{" "}
-            należności w widoku
+            {filtered.length} osób · klik w miesiąc oznacza wpłatę ręcznie · {formatPln(filtered.reduce((s, p) => s + p.monthlyFee, 0))} należności w widoku
           </span>
-          <div className="flex gap-2">
-            <Button variant="ghost" size="sm" onClick={() => seedDemo()}>
-              Przykładowe dane
-            </Button>
-            <Button variant="ghost" size="sm" onClick={() => resetAll()}>
-              Wyczyść kasę
-            </Button>
-          </div>
+          <Button variant="ghost" size="sm" onClick={() => seedDemo()}>
+            Przykładowe dane
+          </Button>
+          <Button variant="ghost" size="sm" onClick={() => resetAll()}>
+            Wyczyść kasę
+          </Button>
         </div>
       </div>
-
-      <ParticipantDialog
-        open={editing !== undefined}
-        onOpenChange={(o) => {
-          if (!o) setEditing(undefined);
-        }}
-        participant={editing ?? undefined}
-      />
-      <ExcelImportDialog
-        open={Boolean(excelFile)}
-        file={excelFile}
-        onOpenChange={(o) => {
-          if (!o) setExcelFile(null);
-        }}
-      />
+      <ExcelImportDialog open={Boolean(excelFile)} onOpenChange={(o) => !o && setExcelFile(null)} file={excelFile} />
+      <ParticipantDialog open={editing !== undefined} onOpenChange={(o) => !o && setEditing(undefined)} participant={editing} />
     </AppShell>
   );
 }

@@ -2,10 +2,8 @@ import type { ManualMark, Participant, PaymentMatch } from "./types";
 import { receivedFor } from "./store";
 
 export type MonthStatus = "paid" | "partial" | "over" | "unpaid" | "review";
-
 export type TransferBucket = "unmatched" | "review" | "booked";
 
-/** Suggested matches wait for a human; anything else with a match is already booked. */
 export function bucketForMatches(related: PaymentMatch[]): TransferBucket {
   if (related.length === 0) return "unmatched";
   if (related.some((m) => m.kind === "suggested")) return "review";
@@ -21,18 +19,12 @@ export function monthStatusFor(
   const expected = participant.monthlyFee;
   const mark = manual[participant.id]?.[month];
   const received = receivedFor(participant.id, month, matches);
-  if (mark?.status === "paid") {
-    return { status: "paid", received: mark.amount ?? received ?? expected, expected };
-  }
+  if (mark?.status === "paid") return { status: "paid", received: mark.amount ?? received ?? expected, expected };
   if (mark?.status === "unpaid") return { status: "unpaid", received: 0, expected };
-  if (mark?.status === "partial") {
-    return { status: "partial", received: mark.amount ?? received, expected };
-  }
+  if (mark?.status === "partial") return { status: "partial", received: mark.amount ?? received, expected };
   if (received <= 0) return { status: "unpaid", received, expected };
   const related = matches.filter((m) => m.participantId === participant.id && m.month === month);
-  if (related.some((m) => m.kind === "suggested")) {
-    return { status: "review", received, expected };
-  }
+  if (related.some((m) => m.kind === "suggested")) return { status: "review", received, expected };
   if (Math.abs(received - expected) <= 1) return { status: "paid", received, expected };
   if (received < expected) return { status: "partial", received, expected };
   return { status: "over", received, expected };

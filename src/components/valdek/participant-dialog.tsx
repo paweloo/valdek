@@ -1,13 +1,6 @@
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -70,9 +63,7 @@ export function ParticipantDialog({
       <DialogContent>
         <DialogHeader>
           <DialogTitle>{participant ? "Edycja uczestnika" : "Nowy uczestnik"}</DialogTitle>
-          <DialogDescription>
-            Stawka może być inna niż w grupie — tu jest źródło prawdy przy rozliczeniu.
-          </DialogDescription>
+          <DialogDescription>Stawka może być inna niż w grupie — tu jest źródło prawdy przy rozliczeniu.</DialogDescription>
         </DialogHeader>
         <div className="grid gap-4">
           <div className="grid gap-4 sm:grid-cols-2">
@@ -87,16 +78,9 @@ export function ParticipantDialog({
           </div>
           <div className="grid gap-2">
             <Label>Grupa</Label>
-            <Select
-              value={groupId}
-              onValueChange={(id) => {
-                setGroupId(id);
-                const g = groups.find((x) => x.id === id);
-                if (g && !participant) setFee(String(g.defaultFee));
-              }}
-            >
+            <Select value={groupId} onValueChange={setGroupId}>
               <SelectTrigger>
-                <SelectValue placeholder="Wybierz grupę" />
+                <SelectValue />
               </SelectTrigger>
               <SelectContent>
                 {groups.map((g) => (
@@ -106,15 +90,11 @@ export function ParticipantDialog({
                 ))}
               </SelectContent>
             </Select>
-            <Input
-              placeholder="Albo wpisz nową grupę"
-              value={newGroup}
-              onChange={(e) => setNewGroup(e.target.value)}
-            />
+            <Input placeholder="albo nowa grupa…" value={newGroup} onChange={(e) => setNewGroup(e.target.value)} />
           </div>
           <div className="grid gap-2">
-            <Label htmlFor="fee">Stawka miesięczna (zł)</Label>
-            <Input id="fee" inputMode="decimal" value={fee} onChange={(e) => setFee(e.target.value)} />
+            <Label htmlFor="fee">Stawka miesięczna</Label>
+            <Input id="fee" value={fee} onChange={(e) => setFee(e.target.value)} />
           </div>
           <div className="grid gap-2">
             <Label htmlFor="notes">Uwagi</Label>

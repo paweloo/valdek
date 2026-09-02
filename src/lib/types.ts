@@ -41,7 +41,6 @@ export type Transfer = {
 };
 
 export type MatchKind = "auto" | "confirmed" | "manual" | "suggested";
-
 export type AmountIssue = "ok" | "partial" | "over" | "unexpected";
 
 export type PaymentMatch = {

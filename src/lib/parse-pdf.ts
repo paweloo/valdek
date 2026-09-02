@@ -22,15 +22,10 @@ export async function parseBankPdf(
 ): Promise<PdfParseResult> {
   const pdfjs = await loadPdfjs();
   const data =
-    file instanceof File
-      ? await file.arrayBuffer()
-      : file instanceof Uint8Array
-        ? file
-        : new Uint8Array(file);
+    file instanceof File ? await file.arrayBuffer() : file instanceof Uint8Array ? file : new Uint8Array(file);
   const doc = await pdfjs.getDocument({ data, useSystemFonts: true }).promise;
   const statementId = uid("st");
   const allLines: string[] = [];
-
   for (let i = 1; i <= doc.numPages; i += 1) {
     const page = await doc.getPage(i);
     const content = await page.getTextContent();
@@ -43,7 +38,6 @@ export async function parseBankPdf(
       .filter((x): x is { str: string; x: number; y: number } => x != null);
     allLines.push(...reconstructLines(items));
   }
-
   const text = allLines.join("\n");
   const transfers = parseTransfersFromText(text, statementId);
   const detectedMonth = detectStatementMonth(text) ?? month;
@@ -57,7 +51,6 @@ export async function parseBankPdf(
         : incoming.length === 0 && transfers.length > 0
           ? "Na wyciągu są głównie wydatki. Wpłaty przychodzące Valdek weźmie do rozliczenia, zakupy kartą pomija."
           : undefined;
-
   return {
     statement: {
       id: statementId,

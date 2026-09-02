@@ -5,29 +5,33 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-export function formatPln(value: number) {
-  return new Intl.NumberFormat("pl-PL", {
-    style: "currency",
-    currency: "PLN",
-    maximumFractionDigits: 2,
-  }).format(value);
+export function uid(prefix: string) {
+  return `${prefix}-${Math.random().toString(36).slice(2, 9)}${Date.now().toString(36).slice(-4)}`;
 }
 
-export function uid(prefix = "id") {
-  if (typeof crypto !== "undefined" && crypto.randomUUID) {
-    return crypto.randomUUID();
-  }
-  return `${prefix}-${Math.random().toString(36).slice(2, 10)}`;
+export function formatPln(n: number) {
+  return new Intl.NumberFormat("pl-PL", { style: "currency", currency: "PLN" }).format(n);
 }
 
-export function downloadBlob(blob: Blob, filename: string) {
+export function downloadBlob(blob: Blob, name: string) {
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
-  a.download = filename;
-  a.rel = "noopener";
-  document.body.appendChild(a);
+  a.download = name;
   a.click();
-  a.remove();
-  window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+  URL.revokeObjectURL(url);
+}
+
+export function bufferToB64(buf: ArrayBuffer) {
+  const bytes = new Uint8Array(buf);
+  let binary = "";
+  for (let i = 0; i < bytes.length; i += 1) binary += String.fromCharCode(bytes[i]!);
+  return btoa(binary);
+}
+
+export function b64ToBuffer(b64: string) {
+  const binary = atob(b64);
+  const bytes = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i += 1) bytes[i] = binary.charCodeAt(i);
+  return bytes.buffer;
 }
