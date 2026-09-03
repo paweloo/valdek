@@ -8,7 +8,6 @@ export function HydrateStore({ children }: { children: ReactNode }) {
       try {
         await useValdek.persist.rehydrate();
         const state = useValdek.getState();
-        if (!state.seeded && state.participants.length === 0) state.seedDemo();
         if (!cancelled) state.setHydrated(true);
         if (!useValdek.getState().sourceWorkbookB64) {
           void fetch("/ewidencja-szablon.xlsx")
@@ -23,11 +22,6 @@ export function HydrateStore({ children }: { children: ReactNode }) {
             });
         }
       } catch {
-        try {
-          useValdek.getState().seedDemo();
-        } catch {
-          /* empty */
-        }
         if (!cancelled) useValdek.getState().setHydrated(true);
       }
     }

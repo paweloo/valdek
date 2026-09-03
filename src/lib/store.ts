@@ -74,7 +74,7 @@ function emptyState() {
 }
 
 function initialState() {
-  return demoSnapshot();
+  return emptyState();
 }
 
 export const useValdek = create<ValdekState>()(
@@ -263,7 +263,7 @@ export const useValdek = create<ValdekState>()(
       },
     }),
     {
-      name: "valdek-store-v3",
+      name: "valdek-store-v4",
       storage: createJSONStorage(() => localStorage),
       skipHydration: true,
       partialize: (state) => ({
