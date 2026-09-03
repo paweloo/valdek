@@ -1,7 +1,16 @@
 import { Link, useRouterState } from "@tanstack/react-router";
-import { LayoutDashboard, Users, FileText, Scale, Menu, ShieldCheck } from "lucide-react";
-import { type ReactNode } from "react";
+import { LayoutDashboard, Users, FileText, Scale, Menu, ShieldCheck, RotateCcw } from "lucide-react";
+import { useState, type ReactNode } from "react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Sheet, SheetContent, SheetHeader, SheetTrigger } from "@/components/ui/sheet";
 import {
   Select,
@@ -10,6 +19,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { useValdek } from "@/lib/store";
 import { monthLabel, seasonMonths } from "@/lib/polish";
 import { cn } from "@/lib/utils";
@@ -86,6 +96,47 @@ function MonthSelect() {
   );
 }
 
+function ResetButton() {
+  const [open, setOpen] = useState(false);
+  const resetAll = useValdek((s) => s.resetAll);
+  const confirm = () => {
+    resetAll();
+    setOpen(false);
+    toast.success("Wyczyszczono uczestników i wyciągi");
+  };
+  return (
+    <>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <Button variant="ghost" size="icon" aria-label="Resetuj dane" onClick={() => setOpen(true)}>
+            <RotateCcw />
+          </Button>
+        </TooltipTrigger>
+        <TooltipContent>Resetuj dane</TooltipContent>
+      </Tooltip>
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Resetuj dane</DialogTitle>
+            <DialogDescription>
+              Czy na pewno chcesz zresetować wszystkie dane? Znikną lista uczestników, wyciągi i
+              rozliczenia.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="secondary" onClick={() => setOpen(false)}>
+              Anuluj
+            </Button>
+            <Button variant="destructive" onClick={confirm}>
+              Resetuj
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </>
+  );
+}
+
 export function AppShell({ children }: { children: ReactNode }) {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   return (
@@ -123,6 +174,7 @@ export function AppShell({ children }: { children: ReactNode }) {
             </div>
             <div className="ml-auto flex items-center gap-2">
               <MonthSelect />
+              <ResetButton />
             </div>
           </header>
           <main className="flex-1 px-4 py-6 md:px-8 md:py-8">{children}</main>
