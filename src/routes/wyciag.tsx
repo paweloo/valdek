@@ -204,7 +204,7 @@ function WyciagPage() {
                       />
                     </td>
                     <td className="px-3 py-3">
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-2 justify-between">
                         {t.ignored ? (
                           <Badge variant="outline">pominięty</Badge>
                         ) : match ? (
