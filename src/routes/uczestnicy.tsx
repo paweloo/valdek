@@ -71,7 +71,7 @@ function UczestnicyPage() {
       });
       const blob = await patchEwidencjaWorkbook(source, people, seasonStartYear);
       downloadBlob(blob, sourceFileName || "UCZESTNICY.xlsx");
-      toast.success("Zapisano ten sam plik ewidencji — checkboxy i style zostają");
+      toast.success("Pobieranie zaktualizowanego pliku Excel");
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Nie udało się zapisać Excela");
     }
@@ -104,7 +104,7 @@ function UczestnicyPage() {
                 }}
               />
               <Button variant="secondary" asChild>
-                <span>
+                <span className="cursor-pointer">
                   <Upload /> Wgraj Excel
                 </span>
               </Button>

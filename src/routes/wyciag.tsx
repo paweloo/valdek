@@ -120,26 +120,26 @@ function WyciagPage() {
                 : `Dodaj wyciąg z mBanku w formacie PDF za ${monthLabel(selectedMonth)}`}
             </div>
             <p className="mt-2 max-w-sm text-sm text-muted-foreground">
-              Aby dodać dokument za inny miesiąc, zmień miesiąc w menu w prawym górnym rogu
+              Aby dodać dokument za inny miesiąc, zmień datę w menu w prawym górnym rogu
             </p>
           </FileDrop>
           <div className="rounded-xl bg-card p-5 shadow-[var(--shadow-border)]">
             <div className="font-medium">Wklej historię</div>
             <p className="mt-1 mb-3 text-sm text-muted-foreground">
-              Gdy PDF jest skanem, skopiuj operacje z bankowości.
+              Jeśli nie posiadasz PDF, możesz wkleić historię z mBanku w formacie tekstowym
             </p>
             <Textarea
               value={paste}
               onChange={(e) => setPaste(e.target.value)}
-              placeholder={"2026-09-02  JULIA ZAJK SENIORZY WRZESIEŃ  10,00 PLN"}
+              placeholder={"2026-09-02  JAN KOWALSKI SENIORZY WRZESIEŃ  210,00 PLN"}
             />
             <div className="mt-3 flex flex-wrap gap-2">
               <Button onClick={onPaste} disabled={!paste.trim()}>
                 Wczytaj tekst
               </Button>
-              <Button variant="secondary" onClick={() => void loadSample()} disabled={busy}>
+              {/* <Button variant="secondary" onClick={() => void loadSample()} disabled={busy}>
                 Przykładowy wyciąg mBank
-              </Button>
+              </Button> */}
             </div>
           </div>
         </div>
@@ -174,7 +174,9 @@ function WyciagPage() {
             <h2 className="font-display text-2xl">Operacje</h2>
             {hiddenSpend > 0 ? (
               <Button variant="ghost" size="sm" onClick={() => setShowSpend((v) => !v)}>
-                {showSpend ? "Ukryj wydatki kartą" : `Pokaż wydatki kartą (${hiddenSpend})`}
+                {showSpend
+                  ? "Ukryj pominięte transakcje"
+                  : `Pokaż pominęte transakcje (${hiddenSpend})`}
               </Button>
             ) : null}
           </div>

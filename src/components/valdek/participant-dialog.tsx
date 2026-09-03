@@ -1,10 +1,23 @@
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+// import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import type { Participant } from "@/lib/types";
 import { useValdek } from "@/lib/store";
 
@@ -63,7 +76,9 @@ export function ParticipantDialog({
       <DialogContent>
         <DialogHeader>
           <DialogTitle>{participant ? "Edycja uczestnika" : "Nowy uczestnik"}</DialogTitle>
-          <DialogDescription>Stawka może być inna niż w grupie — tu jest źródło prawdy przy rozliczeniu.</DialogDescription>
+          <DialogDescription>
+            Nowy uczestnik będzie widoczny w Excelu po pobraniu nowego pliku
+          </DialogDescription>
         </DialogHeader>
         <div className="grid gap-4">
           <div className="grid gap-4 sm:grid-cols-2">
@@ -90,16 +105,20 @@ export function ParticipantDialog({
                 ))}
               </SelectContent>
             </Select>
-            <Input placeholder="albo nowa grupa…" value={newGroup} onChange={(e) => setNewGroup(e.target.value)} />
+            {/* <Input
+              placeholder="albo nowa grupa…"
+              value={newGroup}
+              onChange={(e) => setNewGroup(e.target.value)}
+            /> */}
           </div>
           <div className="grid gap-2">
             <Label htmlFor="fee">Stawka miesięczna</Label>
             <Input id="fee" value={fee} onChange={(e) => setFee(e.target.value)} />
           </div>
-          <div className="grid gap-2">
+          {/* <div className="grid gap-2">
             <Label htmlFor="notes">Uwagi</Label>
             <Textarea id="notes" value={notes} onChange={(e) => setNotes(e.target.value)} />
-          </div>
+          </div> */}
         </div>
         <DialogFooter>
           <Button variant="ghost" onClick={() => onOpenChange(false)}>

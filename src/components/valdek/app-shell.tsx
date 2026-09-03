@@ -90,7 +90,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   return (
     <div className="min-h-dvh bg-background">
-      <div className="mx-auto flex min-h-dvh max-w-[1440px]">
+      <div className="mx-auto flex min-h-dvh max-w-[1800px]">
         <aside className="sticky top-0 hidden h-dvh w-60 shrink-0 flex-col border-r border-border bg-sidebar p-5 md:flex">
           <Brand />
           <div className="curtain-rule my-6" />
@@ -98,7 +98,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           <div className="mt-auto rounded-lg bg-secondary p-3">
             <div className="flex items-start gap-2 text-xs leading-relaxed text-muted-foreground">
               <ShieldCheck className="mt-0.5 size-4 shrink-0" />
-              Pliki i wpłaty zostają na tym komputerze. Nic nie wychodzi do sieci.
+              Dane przechowywane są wyłącznie w lokalnej pamięci przeglądarki.
             </div>
           </div>
         </aside>
