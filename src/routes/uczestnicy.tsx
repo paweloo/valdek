@@ -34,6 +34,8 @@ function UczestnicyPage() {
   const updateParticipant = useValdek((s) => s.updateParticipant);
   const removeParticipant = useValdek((s) => s.removeParticipant);
   const setManual = useValdek((s) => s.setManual);
+  const resetAll = useValdek((s) => s.resetAll);
+  const seedDemo = useValdek((s) => s.seedDemo);
   const sourceWorkbookB64 = useValdek((s) => s.sourceWorkbookB64);
   const sourceFileName = useValdek((s) => s.sourceFileName);
   const [query, setQuery] = useState("");
@@ -219,6 +221,12 @@ function UczestnicyPage() {
             {filtered.length} osób · {formatPln(filtered.reduce((s, p) => s + p.monthlyFee, 0))}{" "}
             należności w widoku
           </span>
+          {/* <Button variant="ghost" size="sm" onClick={() => seedDemo()}>
+            Przykładowe dane
+          </Button> */}
+          <Button variant="ghost" size="sm" onClick={() => resetAll()}>
+            Wyczyść dane
+          </Button>
         </div>
       </div>
       <ExcelImportDialog

@@ -1,4 +1,11 @@
-import { useEffect, useRef, useState, type ClipboardEvent, type KeyboardEvent, type ReactNode } from "react";
+import {
+  useEffect,
+  useRef,
+  useState,
+  type ClipboardEvent,
+  type KeyboardEvent,
+  type ReactNode,
+} from "react";
 import { getPinGate, submitPin } from "@/lib/pin";
 import { cn } from "@/lib/utils";
 
@@ -44,7 +51,8 @@ function PinScreen({ onUnlock }: { onUnlock: () => void }) {
       const next = [...prev];
       next[index] = value;
       if (value && index < DIGITS - 1) queueMicrotask(() => refs.current[index + 1]?.focus());
-      if (value && next.every((d) => d.length === 1)) queueMicrotask(() => void unlock(next.join("")));
+      if (value && next.every((d) => d.length === 1))
+        queueMicrotask(() => void unlock(next.join("")));
       return next;
     });
   };
@@ -109,11 +117,11 @@ function PinScreen({ onUnlock }: { onUnlock: () => void }) {
   return (
     <div className="flex min-h-dvh flex-col items-center justify-center bg-background px-4">
       <div className="flex w-full max-w-md flex-col items-center">
-        <span className="flex size-12 items-center justify-center rounded-md bg-primary font-display text-3xl leading-none text-primary-foreground">
+        {/* <span className="flex size-12 items-center justify-center rounded-md bg-primary font-display text-3xl leading-none text-primary-foreground">
           V
-        </span>
+        </span> */}
         <h1 className="font-display mt-5 text-5xl">Valdek</h1>
-        <p className="mt-2 text-sm text-muted-foreground">Wpisz kod kasy, żeby otworzyć ewidencję.</p>
+        {/* <p className="mt-2 text-sm text-muted-foreground">Wpisz kod kasy, żeby otworzyć ewidencję.</p> */}
         <div
           className={cn("mt-8 flex w-full justify-center gap-2", error && "animate-pulse")}
           role="group"
@@ -145,7 +153,7 @@ function PinScreen({ onUnlock }: { onUnlock: () => void }) {
             />
           ))}
         </div>
-        <p className="mt-4 h-5 text-sm text-unpaid">{error ? "Nie ten kod. Spróbuj jeszcze raz." : ""}</p>
+        <p className="mt-4 h-5 text-sm text-unpaid">{error ? "Niepoprawny kod" : ""}</p>
       </div>
     </div>
   );
