@@ -203,7 +203,7 @@ function UczestnicyPage() {
                       );
                     })}
                     <td className="px-3 py-2">
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-2 justify-between">
                         <StatusBadge status={st.status} />
                         <Button variant="ghost" size="sm" onClick={() => removeParticipant(p.id)}>
                           <Trash2 className="size-4" /> Usuń

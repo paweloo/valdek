@@ -114,9 +114,13 @@ function WyciagPage() {
         <div className="grid gap-4 lg:grid-cols-2">
           <FileDrop accept="application/pdf,.pdf" onFile={onPdf} label="Wgraj PDF z wyciągiem">
             <FileText className="mb-3 size-6 text-muted-foreground" />
-            <div className="font-display text-2xl">{busy ? "Czytam wyciąg…" : "Upuść PDF"}</div>
+            <div className="font-display text-2xl">
+              {busy
+                ? "Czytam wyciąg…"
+                : `Dodaj wyciąg z mBanku w formacie PDF za ${monthLabel(selectedMonth)}`}
+            </div>
             <p className="mt-2 max-w-sm text-sm text-muted-foreground">
-              Eksport „Lista operacji” z mBanku.
+              Aby dodać dokument za inny miesiąc, zmień miesiąc w menu w prawym górnym rogu
             </p>
           </FileDrop>
           <div className="rounded-xl bg-card p-5 shadow-[var(--shadow-border)]">
@@ -150,9 +154,7 @@ function WyciagPage() {
                 >
                   <div>
                     <div className="text-sm font-medium">{s.fileName}</div>
-                    <div className="text-xs text-muted-foreground">
-                      {s.transferCount} wpłat · {monthLabel(s.month)}
-                    </div>
+                    <div className="text-xs text-muted-foreground">{monthLabel(s.month)}</div>
                   </div>
                   <Button
                     variant="ghost"
