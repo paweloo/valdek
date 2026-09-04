@@ -1,8 +1,21 @@
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import type { ExcelMapping, NameOrder } from "@/lib/types";
 import { guessMapping, interpretExcelRow, readSpreadsheet } from "@/lib/parse-excel";
 import { useValdek } from "@/lib/store";
@@ -56,7 +69,10 @@ export function ExcelImportDialog({
     };
   }, [file, open, seasonStartYear, onOpenChange, seedBanner]);
 
-  const setField = (key: "fullName" | "firstName" | "lastName" | "group" | "fee", value: string) => {
+  const setField = (
+    key: "fullName" | "firstName" | "lastName" | "group" | "fee",
+    value: string,
+  ) => {
     setMapping((m) => ({ ...m, [key]: value === NONE ? undefined : Number(value) }));
   };
 
@@ -84,15 +100,23 @@ export function ExcelImportDialog({
       <DialogContent className="max-w-2xl">
         <DialogHeader>
           <DialogTitle>Mapowanie kolumn</DialogTitle>
-          <DialogDescription>
+          {/* <DialogDescription>
             Valdek czyta listę z grupami jako kolumny TAK/NIE i miesiącami. Przy eksporcie wraca do tego samego pliku — checkboxy i style zostają.
-          </DialogDescription>
+          </DialogDescription> */}
         </DialogHeader>
         <div className="grid gap-4 sm:grid-cols-2">
-          <MapSelect label="Imię i nazwisko (jedna kolumna)" value={mapping.fullName} options={colOptions} onChange={(v) => setField("fullName", v)} />
+          <MapSelect
+            label="Imię i nazwisko (jedna kolumna)"
+            value={mapping.fullName}
+            options={colOptions}
+            onChange={(v) => setField("fullName", v)}
+          />
           <div className="grid gap-2">
             <Label>Kolejność w kolumnie</Label>
-            <Select value={mapping.nameOrder ?? "last-first"} onValueChange={(v) => setMapping((m) => ({ ...m, nameOrder: v as NameOrder }))}>
+            <Select
+              value={mapping.nameOrder ?? "last-first"}
+              onValueChange={(v) => setMapping((m) => ({ ...m, nameOrder: v as NameOrder }))}
+            >
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
@@ -102,10 +126,30 @@ export function ExcelImportDialog({
               </SelectContent>
             </Select>
           </div>
-          <MapSelect label="Imię" value={mapping.firstName} options={colOptions} onChange={(v) => setField("firstName", v)} />
-          <MapSelect label="Nazwisko" value={mapping.lastName} options={colOptions} onChange={(v) => setField("lastName", v)} />
-          <MapSelect label="Grupa (jedna kolumna)" value={mapping.group} options={colOptions} onChange={(v) => setField("group", v)} />
-          <MapSelect label="Stawka" value={mapping.fee} options={colOptions} onChange={(v) => setField("fee", v)} />
+          <MapSelect
+            label="Imię"
+            value={mapping.firstName}
+            options={colOptions}
+            onChange={(v) => setField("firstName", v)}
+          />
+          <MapSelect
+            label="Nazwisko"
+            value={mapping.lastName}
+            options={colOptions}
+            onChange={(v) => setField("lastName", v)}
+          />
+          {/* <MapSelect
+            label="Grupa (jedna kolumna)"
+            value={mapping.group}
+            options={colOptions}
+            onChange={(v) => setField("group", v)}
+          /> */}
+          <MapSelect
+            label="Stawka"
+            value={mapping.fee}
+            options={colOptions}
+            onChange={(v) => setField("fee", v)}
+          />
           <div className="grid gap-2">
             <Label>Jak wczytać</Label>
             <Select value={mode} onValueChange={(v) => setMode(v as "merge" | "replace")}>
@@ -119,14 +163,20 @@ export function ExcelImportDialog({
             </Select>
           </div>
         </div>
-        {groupNames.length > 0 ? (
-          <p className="text-sm text-muted-foreground">Grupy z kolumn TAK/NIE: {groupNames.join(" · ")}</p>
-        ) : null}
+        {/* {groupNames.length > 0 ? ( */}
+        <p className="text-sm text-muted-foreground">
+          {/* Grupy z kolumn TAK/NIE: {groupNames.join(" · ")} */}
+          Wczytane dane:
+        </p>
+        {/* ) : null} */}
         <div className="overflow-x-auto rounded-lg bg-secondary p-3">
           {preview.length ? (
             <ul className="text-sm">
               {preview.map((p, i) => (
-                <li key={`${p.lastName}-${p.firstName}-${i}`} className="flex justify-between gap-3 py-1">
+                <li
+                  key={`${p.lastName}-${p.firstName}-${i}`}
+                  className="flex justify-between gap-3 py-1"
+                >
                   <span>
                     {fullName(p.firstName, p.lastName)}
                     <span className="text-muted-foreground"> · {p.groupName}</span>

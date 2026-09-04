@@ -60,10 +60,7 @@ export function SheetsImportDialog({
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Google Sheets</DialogTitle>
-          <DialogDescription>
-            Wklej link do arkusza z listą uczestników. Valdek pobierze go tak samo jak plik Excel —
-            mapowanie kolumn zostaje.
-          </DialogDescription>
+          <DialogDescription>Wklej link do arkusza z listą uczestników</DialogDescription>
         </DialogHeader>
         <div className="grid gap-2">
           <Label htmlFor="sheet-url">Link do arkusza</Label>
@@ -82,7 +79,7 @@ export function SheetsImportDialog({
           />
           <p className="text-xs leading-relaxed text-muted-foreground">
             W arkuszu: Udostępnij → Ogólny dostęp → Każdy, kto ma link → Czytający. Bez tego Google
-            nie odda pliku.
+            nie będzie w stanie odczytać pliku.
           </p>
         </div>
         <DialogFooter>
@@ -90,7 +87,11 @@ export function SheetsImportDialog({
             Anuluj
           </Button>
           <Button onClick={() => void load()} disabled={busy || url.trim().length < 8}>
-            {busy ? "Pobieranie…" : savedUrl && url.trim() === savedUrl ? "Odśwież listę" : "Wczytaj arkusz"}
+            {busy
+              ? "Pobieranie…"
+              : savedUrl && url.trim() === savedUrl
+                ? "Odśwież listę"
+                : "Wczytaj arkusz"}
           </Button>
         </DialogFooter>
       </DialogContent>

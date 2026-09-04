@@ -24,7 +24,11 @@ export function GoogleSaveButton() {
   const seasonStartYear = useValdek((s) => s.seasonStartYear);
   const sourceSheetUrl = useValdek((s) => s.sourceSheetUrl);
   const sourceMapping = useValdek((s) => s.sourceMapping);
-  const [status, setStatus] = useState<{ configured: boolean; connected: boolean; redirectUri: string } | null>(null);
+  const [status, setStatus] = useState<{
+    configured: boolean;
+    connected: boolean;
+    redirectUri: string;
+  } | null>(null);
   const [setupOpen, setSetupOpen] = useState(false);
   const [busy, setBusy] = useState(false);
   const connected = Boolean(status?.connected);
@@ -108,7 +112,9 @@ export function GoogleSaveButton() {
   };
 
   const clientRedirect =
-    typeof window === "undefined" ? status?.redirectUri ?? "" : `${window.location.origin}/api/google/callback`;
+    typeof window === "undefined"
+      ? (status?.redirectUri ?? "")
+      : `${window.location.origin}/api/google/callback`;
   const redirectUri = status?.redirectUri || clientRedirect;
   const extraRedirects = redirectUri.includes("localhost")
     ? [redirectUri.replace("localhost", "127.0.0.1")]
@@ -143,7 +149,7 @@ export function GoogleSaveButton() {
       ) : (
         <Button variant="secondary" onClick={login}>
           <LogIn />
-          Zaloguj Google
+          Zaloguj się w Google
         </Button>
       )}
       <Dialog open={setupOpen} onOpenChange={setSetupOpen}>
@@ -151,17 +157,22 @@ export function GoogleSaveButton() {
           <DialogHeader>
             <DialogTitle>Połącz Google Sheets</DialogTitle>
             <DialogDescription>
-              Błąd <span className="font-mono">redirect_uri_mismatch</span> znaczy, że w Google Cloud nie ma
-              dokładnie tego adresu. Wklej go 1:1, bez ukośnika na końcu.
+              Błąd <span className="font-mono">redirect_uri_mismatch</span> znaczy, że w Google
+              Cloud nie ma dokładnie tego adresu. Wklej go 1:1, bez ukośnika na końcu.
             </DialogDescription>
           </DialogHeader>
           <div className="grid gap-2">
-            <p className="text-xs tracking-wide text-muted-foreground uppercase">Authorized redirect URI</p>
+            <p className="text-xs tracking-wide text-muted-foreground uppercase">
+              Authorized redirect URI
+            </p>
             <code className="block break-all rounded-md bg-secondary px-3 py-2 text-sm text-foreground">
               {redirectUri || "http://localhost:8080/api/google/callback"}
             </code>
             {extraRedirects.map((uri) => (
-              <code key={uri} className="block break-all rounded-md bg-secondary px-3 py-2 text-sm text-foreground">
+              <code
+                key={uri}
+                className="block break-all rounded-md bg-secondary px-3 py-2 text-sm text-foreground"
+              >
                 {uri}
               </code>
             ))}
@@ -169,7 +180,9 @@ export function GoogleSaveButton() {
           <ol className="list-decimal space-y-2 pl-5 text-sm text-muted-foreground">
             <li>Google Cloud → APIs & Services → Credentials → Twój OAuth client.</li>
             <li>Authorized redirect URIs → Add URI → wklej adresy powyżej.</li>
-            <li>Authorized JavaScript origins: ten sam host, bez ścieżki (np. http://localhost:8080).</li>
+            <li>
+              Authorized JavaScript origins: ten sam host, bez ścieżki (np. http://localhost:8080).
+            </li>
             <li>Zapisz i poczekaj chwilę — Google czasem cache’uje stary URI.</li>
           </ol>
           <DialogFooter>

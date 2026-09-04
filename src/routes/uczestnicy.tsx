@@ -37,8 +37,8 @@ function UczestnicyPage() {
   const removeParticipant = useValdek((s) => s.removeParticipant);
   const setManual = useValdek((s) => s.setManual);
   const resetAll = useValdek((s) => s.resetAll);
-  const sourceWorkbookB64 = useValdek((s) => s.sourceWorkbookB64);
-  const sourceFileName = useValdek((s) => s.sourceFileName);
+  // const sourceWorkbookB64 = useValdek((s) => s.sourceWorkbookB64);
+  // const sourceFileName = useValdek((s) => s.sourceFileName);
   const [query, setQuery] = useState("");
   const [groupId, setGroupId] = useState("all");
   const [editing, setEditing] = useState<Participant | null | undefined>(undefined);
@@ -56,28 +56,28 @@ function UczestnicyPage() {
     });
   }, [participants, query, groupId, groups]);
 
-  const exportList = async () => {
-    try {
-      let source: ArrayBuffer | null = sourceWorkbookB64 ? b64ToBuffer(sourceWorkbookB64) : null;
-      if (!source) {
-        const res = await fetch("/ewidencja-szablon.xlsx");
-        if (!res.ok) throw new Error("Brak szablonu ewidencji");
-        source = await res.arrayBuffer();
-      }
-      const people = peopleFromState({
-        participants,
-        groups,
-        matches,
-        manual,
-        seasonMonths: months,
-      });
-      const blob = await patchEwidencjaWorkbook(source, people, seasonStartYear);
-      downloadBlob(blob, sourceFileName || "UCZESTNICY.xlsx");
-      toast.success("Pobieranie zaktualizowanego pliku Excel");
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Nie udało się zapisać Excela");
-    }
-  };
+  // const exportList = async () => {
+  //   try {
+  //     let source: ArrayBuffer | null = sourceWorkbookB64 ? b64ToBuffer(sourceWorkbookB64) : null;
+  //     if (!source) {
+  //       const res = await fetch("/ewidencja-szablon.xlsx");
+  //       if (!res.ok) throw new Error("Brak szablonu ewidencji");
+  //       source = await res.arrayBuffer();
+  //     }
+  //     const people = peopleFromState({
+  //       participants,
+  //       groups,
+  //       matches,
+  //       manual,
+  //       seasonMonths: months,
+  //     });
+  //     const blob = await patchEwidencjaWorkbook(source, people, seasonStartYear);
+  //     downloadBlob(blob, sourceFileName || "UCZESTNICY.xlsx");
+  //     toast.success("Pobieranie zaktualizowanego pliku Excel");
+  //   } catch (err) {
+  //     toast.error(err instanceof Error ? err.message : "Nie udało się zapisać Excela");
+  //   }
+  // };
 
   return (
     <AppShell>
@@ -95,7 +95,7 @@ function UczestnicyPage() {
               <Download /> Zapisz Excel
             </Button> */}
             <Button variant="secondary" onClick={() => setSheetsOpen(true)}>
-              <Table2 /> Google Sheets
+              <Table2 /> Wczytaj z Google Sheets
             </Button>
             <GoogleSaveButton />
             <label>
