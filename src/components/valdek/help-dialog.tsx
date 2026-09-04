@@ -14,15 +14,11 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 const STEPS = [
   {
     title: "Uczestnicy",
-    body: "Kliknij „Wczytaj z Google Sheets” i wklej link do arkusza. W Google Sheets stój na tej karcie, której listę chcesz wczytać — Valdek bierze tylko aktywną zakładkę z adresu URL.",
+    body: "Kliknij „Wczytaj z Google Sheets” i wklej link do arkusza. Pamiętaj, aby najpierw wybrać odpowiednią zakładkę w Google Sheets przed skopiowaniem listy, którą chcesz wczytać - Valdek bierze tylko aktywną zakładkę z adresu URL.",
   },
   {
     title: "Uprawnienia arkusza",
     body: "Arkusz musi być odczytywalny przez aplikację. W Google Sheets: Udostępnij → Ogólny dostęp → Każdy, kto ma link → Czytający.",
-  },
-  {
-    title: "Zapis zmian",
-    body: "Po rozliczeniu wpłat możesz zapisać listę z powrotem do tego samego arkusza przyciskiem „Zapisz w Google Sheets”. Najpierw zaloguj się przez „Zaloguj Google”.",
   },
   {
     title: "Wyciąg",
@@ -32,6 +28,10 @@ const STEPS = [
     title: "Rozliczenie",
     body: "Zaakceptuj dopasowane przelewy, przypisz nierozpoznane do właściwej osoby i miesiąca albo pomiń operację, jeśli nie dotyczy zajęć.",
   },
+  {
+    title: "Zapis zmian",
+    body: "Po rozliczeniu wpłat możesz zapisać zaktualizowaną listę z powrotem do tego samego arkusza. Aby to zrobić, przejdź do zakładki „Uczestnicy” i wybierz „Zapisz w Google Sheets”. Ta funkcja wymaga zalogowania się poprzez kliknięcie „Zaloguj się w Google”.",
+  },
 ] as const;
 
 export function HelpButton() {
@@ -40,7 +40,12 @@ export function HelpButton() {
     <>
       <Tooltip>
         <TooltipTrigger asChild>
-          <Button variant="ghost" size="icon" aria-label="Instrukcja obsługi" onClick={() => setOpen(true)}>
+          <Button
+            variant="ghost"
+            size="icon"
+            aria-label="Instrukcja obsługi"
+            onClick={() => setOpen(true)}
+          >
             <CircleHelp />
           </Button>
         </TooltipTrigger>
@@ -51,8 +56,8 @@ export function HelpButton() {
           <DialogHeader>
             <DialogTitle>Jak korzystać z Valdka</DialogTitle>
             <DialogDescription>
-              Krótka instrukcja od wczytania listy uczestników, przez wyciąg z banku, po zapis
-              zmian w arkuszu.
+              Krótka instrukcja od wczytania listy uczestników, przez wyciąg z banku, po zapis zmian
+              w arkuszu.
             </DialogDescription>
           </DialogHeader>
           <ol className="grid gap-4">
