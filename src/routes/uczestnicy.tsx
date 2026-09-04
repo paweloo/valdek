@@ -91,9 +91,9 @@ function UczestnicyPage() {
             </p>
           </div>
           <div className="flex flex-wrap gap-2">
-            <Button variant="outline" onClick={() => void exportList()}>
+            {/* <Button variant="outline" onClick={() => void exportList()}>
               <Download /> Zapisz Excel
-            </Button>
+            </Button> */}
             <Button variant="secondary" onClick={() => setSheetsOpen(true)}>
               <Table2 /> Google Sheets
             </Button>
@@ -109,11 +109,11 @@ function UczestnicyPage() {
                   e.currentTarget.value = "";
                 }}
               />
-              <Button variant="secondary" asChild>
+              {/* <Button variant="secondary" asChild>
                 <span className="cursor-pointer">
                   <Upload /> Wgraj Excel
                 </span>
-              </Button>
+              </Button> */}
             </label>
             <Button onClick={() => setEditing(null)}>
               <Plus /> Dodaj osobę
