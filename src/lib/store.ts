@@ -26,11 +26,15 @@ type ValdekState = {
   manual: Record<string, Record<string, ManualMark>>;
   sourceWorkbookB64: string | null;
   sourceFileName: string;
+  sourceSheetUrl: string | null;
+  sourceMapping: ExcelMapping | null;
   seeded: boolean;
   seedBanner: boolean;
   hydrated: boolean;
   setHydrated: (v: boolean) => void;
   setSourceWorkbook: (buf: ArrayBuffer, fileName: string) => void;
+  setSourceSheetUrl: (url: string | null) => void;
+  setSourceMapping: (mapping: ExcelMapping | null) => void;
   seedDemo: () => void;
   resetAll: () => void;
   dismissSeedBanner: () => void;
@@ -68,6 +72,8 @@ function emptyState() {
     manual: {} as Record<string, Record<string, ManualMark>>,
     sourceWorkbookB64: null as string | null,
     sourceFileName: "UCZESTNICY.xlsx",
+    sourceSheetUrl: null as string | null,
+    sourceMapping: null as ExcelMapping | null,
     seeded: false,
     seedBanner: false,
   };
@@ -85,6 +91,8 @@ export const useValdek = create<ValdekState>()(
       setHydrated: (v) => set({ hydrated: v }),
       setSourceWorkbook: (buf, fileName) =>
         set({ sourceWorkbookB64: bufferToB64(buf), sourceFileName: fileName || "UCZESTNICY.xlsx" }),
+      setSourceSheetUrl: (url) => set({ sourceSheetUrl: url }),
+      setSourceMapping: (mapping) => set({ sourceMapping: mapping }),
       seedDemo: () => set({ ...demoSnapshot(), hydrated: true }),
       resetAll: () => set({ ...emptyState(), hydrated: true, seeded: true, seedBanner: false }),
       dismissSeedBanner: () => set({ seedBanner: false }),
@@ -277,6 +285,8 @@ export const useValdek = create<ValdekState>()(
         manual: state.manual,
         sourceWorkbookB64: state.sourceWorkbookB64,
         sourceFileName: state.sourceFileName,
+        sourceSheetUrl: state.sourceSheetUrl,
+        sourceMapping: state.sourceMapping,
         seeded: state.seeded,
         seedBanner: state.seedBanner,
       }),
