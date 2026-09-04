@@ -1,5 +1,13 @@
 import { Link, useRouterState } from "@tanstack/react-router";
-import { LayoutDashboard, Users, FileText, Scale, Menu, ShieldCheck, RotateCcw } from "lucide-react";
+import {
+  LayoutDashboard,
+  Users,
+  FileText,
+  Scale,
+  Menu,
+  ShieldCheck,
+  RotateCcw,
+} from "lucide-react";
 import { useState, type ReactNode } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -102,13 +110,18 @@ function ResetButton() {
   const confirm = () => {
     resetAll();
     setOpen(false);
-    toast.success("Wyczyszczono uczestników i wyciągi");
+    toast.success("Wyczyszczono dane uczestników i wyciągi");
   };
   return (
     <>
       <Tooltip>
         <TooltipTrigger asChild>
-          <Button variant="ghost" size="icon" aria-label="Resetuj dane" onClick={() => setOpen(true)}>
+          <Button
+            variant="ghost"
+            size="icon"
+            aria-label="Resetuj dane"
+            onClick={() => setOpen(true)}
+          >
             <RotateCcw />
           </Button>
         </TooltipTrigger>
@@ -119,8 +132,8 @@ function ResetButton() {
           <DialogHeader>
             <DialogTitle>Resetuj dane</DialogTitle>
             <DialogDescription>
-              Czy na pewno chcesz zresetować wszystkie dane? Znikną lista uczestników, wyciągi i
-              rozliczenia.
+              Czy na pewno chcesz zresetować wszystkie dane? Zniknie lista uczestników, wgrane
+              wyciągi z banku i rozliczenia.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>

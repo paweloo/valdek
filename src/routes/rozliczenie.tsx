@@ -13,7 +13,13 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useValdek } from "@/lib/store";
-import { detectMonthsInText, fullName, monthLabel, normalizeText, seasonMonths } from "@/lib/polish";
+import {
+  detectMonthsInText,
+  fullName,
+  monthLabel,
+  normalizeText,
+  seasonMonths,
+} from "@/lib/polish";
 import { formatPln } from "@/lib/utils";
 import { bucketForMatches, monthStatusFor } from "@/lib/status";
 import type { Group, PaymentMatch, Transfer } from "@/lib/types";
@@ -70,8 +76,7 @@ function RozliczeniePage() {
             <p className="text-xs tracking-[0.2em] text-muted-foreground uppercase">Kasa</p>
             <h1 className="font-display mt-1 text-4xl">Rozliczenie</h1>
             <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
-              Po lewej przelewy, po prawej lista. Potwierdź pewne dopasowania, przypisz ręcznie
-              nierozpoznane przelewy.
+              Potwierdź pewne dopasowania, przypisz ręcznie nierozpoznane przelewy.
             </p>
           </div>
           <Input
@@ -99,7 +104,7 @@ function RozliczeniePage() {
             />
             <TransferGroup
               title="Do potwierdzenia"
-              empty="Nic nie czeka na Twoje oko."
+              empty="Brak przelewów wymagających weryfikacji."
               items={review}
               months={months}
               selectedMonth={selectedMonth}
@@ -336,12 +341,22 @@ function TransferCard({
               </Button>
             ) : null}
             {onSplit && primary && primary.amountIssue === "over" ? (
-              <Button type="button" size="sm" variant="secondary" onClick={() => onSplit(transfer.id)}>
+              <Button
+                type="button"
+                size="sm"
+                variant="secondary"
+                onClick={() => onSplit(transfer.id)}
+              >
                 <Split /> Dwa miesiące
               </Button>
             ) : null}
             {onUnmatch && primary ? (
-              <Button type="button" size="sm" variant="ghost" onClick={() => onUnmatch(transfer.id)}>
+              <Button
+                type="button"
+                size="sm"
+                variant="ghost"
+                onClick={() => onUnmatch(transfer.id)}
+              >
                 <Unlink /> Odłącz
               </Button>
             ) : null}
