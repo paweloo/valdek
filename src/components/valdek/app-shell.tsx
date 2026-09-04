@@ -28,6 +28,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { HelpButton } from "@/components/valdek/help-dialog";
 import { useValdek } from "@/lib/store";
 import { monthLabel, seasonMonths } from "@/lib/polish";
 import { cn } from "@/lib/utils";
@@ -187,6 +188,7 @@ export function AppShell({ children }: { children: ReactNode }) {
             </div>
             <div className="ml-auto flex items-center gap-2">
               <MonthSelect />
+              <HelpButton />
               <ResetButton />
             </div>
           </header>
