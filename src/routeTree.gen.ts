@@ -13,6 +13,8 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as RozliczenieRouteImport } from './routes/rozliczenie'
 import { Route as UczestnicyRouteImport } from './routes/uczestnicy'
 import { Route as WyciagRouteImport } from './routes/wyciag'
+import { Route as ApiGoogleCallbackRouteImport } from './routes/api/google/callback'
+import { Route as ApiGoogleStartRouteImport } from './routes/api/google/start'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -34,18 +36,32 @@ const WyciagRoute = WyciagRouteImport.update({
   path: '/wyciag',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiGoogleCallbackRoute = ApiGoogleCallbackRouteImport.update({
+  id: '/api/google/callback',
+  path: '/api/google/callback',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiGoogleStartRoute = ApiGoogleStartRouteImport.update({
+  id: '/api/google/start',
+  path: '/api/google/start',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/rozliczenie': typeof RozliczenieRoute
   '/uczestnicy': typeof UczestnicyRoute
   '/wyciag': typeof WyciagRoute
+  '/api/google/callback': typeof ApiGoogleCallbackRoute
+  '/api/google/start': typeof ApiGoogleStartRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/rozliczenie': typeof RozliczenieRoute
   '/uczestnicy': typeof UczestnicyRoute
   '/wyciag': typeof WyciagRoute
+  '/api/google/callback': typeof ApiGoogleCallbackRoute
+  '/api/google/start': typeof ApiGoogleStartRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -53,13 +69,34 @@ export interface FileRoutesById {
   '/rozliczenie': typeof RozliczenieRoute
   '/uczestnicy': typeof UczestnicyRoute
   '/wyciag': typeof WyciagRoute
+  '/api/google/callback': typeof ApiGoogleCallbackRoute
+  '/api/google/start': typeof ApiGoogleStartRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/rozliczenie' | '/uczestnicy' | '/wyciag'
+  fullPaths:
+    | '/'
+    | '/rozliczenie'
+    | '/uczestnicy'
+    | '/wyciag'
+    | '/api/google/callback'
+    | '/api/google/start'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/rozliczenie' | '/uczestnicy' | '/wyciag'
-  id: '__root__' | '/' | '/rozliczenie' | '/uczestnicy' | '/wyciag'
+  to:
+    | '/'
+    | '/rozliczenie'
+    | '/uczestnicy'
+    | '/wyciag'
+    | '/api/google/callback'
+    | '/api/google/start'
+  id:
+    | '__root__'
+    | '/'
+    | '/rozliczenie'
+    | '/uczestnicy'
+    | '/wyciag'
+    | '/api/google/callback'
+    | '/api/google/start'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -67,6 +104,8 @@ export interface RootRouteChildren {
   RozliczenieRoute: typeof RozliczenieRoute
   UczestnicyRoute: typeof UczestnicyRoute
   WyciagRoute: typeof WyciagRoute
+  ApiGoogleCallbackRoute: typeof ApiGoogleCallbackRoute
+  ApiGoogleStartRoute: typeof ApiGoogleStartRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -99,6 +138,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof WyciagRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/google/callback': {
+      id: '/api/google/callback'
+      path: '/api/google/callback'
+      fullPath: '/api/google/callback'
+      preLoaderRoute: typeof ApiGoogleCallbackRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/google/start': {
+      id: '/api/google/start'
+      path: '/api/google/start'
+      fullPath: '/api/google/start'
+      preLoaderRoute: typeof ApiGoogleStartRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -107,6 +160,8 @@ const rootRouteChildren: RootRouteChildren = {
   RozliczenieRoute: RozliczenieRoute,
   UczestnicyRoute: UczestnicyRoute,
   WyciagRoute: WyciagRoute,
+  ApiGoogleCallbackRoute: ApiGoogleCallbackRoute,
+  ApiGoogleStartRoute: ApiGoogleStartRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
