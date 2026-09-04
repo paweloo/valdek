@@ -1,8 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { Plus, Search, Trash2, Upload, Download } from "lucide-react";
+import { Plus, Search, Trash2, Upload, Download, Table2 } from "lucide-react";
 import { useMemo, useState } from "react";
 import { AppShell } from "@/components/valdek/app-shell";
 import { ExcelImportDialog } from "@/components/valdek/excel-import-dialog";
+import { GoogleSaveButton } from "@/components/valdek/google-save-button";
+import { SheetsImportDialog } from "@/components/valdek/sheets-import-dialog";
 import { ParticipantDialog } from "@/components/valdek/participant-dialog";
 import { StatusBadge } from "@/components/valdek/status-badge";
 import { Button } from "@/components/ui/button";
@@ -34,14 +36,13 @@ function UczestnicyPage() {
   const updateParticipant = useValdek((s) => s.updateParticipant);
   const removeParticipant = useValdek((s) => s.removeParticipant);
   const setManual = useValdek((s) => s.setManual);
-  const resetAll = useValdek((s) => s.resetAll);
-  const seedDemo = useValdek((s) => s.seedDemo);
   const sourceWorkbookB64 = useValdek((s) => s.sourceWorkbookB64);
   const sourceFileName = useValdek((s) => s.sourceFileName);
   const [query, setQuery] = useState("");
   const [groupId, setGroupId] = useState("all");
   const [editing, setEditing] = useState<Participant | null | undefined>(undefined);
   const [excelFile, setExcelFile] = useState<File | null>(null);
+  const [sheetsOpen, setSheetsOpen] = useState(false);
 
   const months = seasonMonths(seasonStartYear);
   const filtered = useMemo(() => {
@@ -92,6 +93,10 @@ function UczestnicyPage() {
             <Button variant="outline" onClick={() => void exportList()}>
               <Download /> Zapisz Excel
             </Button>
+            <Button variant="secondary" onClick={() => setSheetsOpen(true)}>
+              <Table2 /> Google Sheets
+            </Button>
+            <GoogleSaveButton />
             <label>
               <input
                 type="file"
@@ -221,12 +226,6 @@ function UczestnicyPage() {
             {filtered.length} osób · {formatPln(filtered.reduce((s, p) => s + p.monthlyFee, 0))}{" "}
             należności w widoku
           </span>
-          {/* <Button variant="ghost" size="sm" onClick={() => seedDemo()}>
-            Przykładowe dane
-          </Button> */}
-          <Button variant="ghost" size="sm" onClick={() => resetAll()}>
-            Wyczyść dane
-          </Button>
         </div>
       </div>
       <ExcelImportDialog
@@ -234,6 +233,7 @@ function UczestnicyPage() {
         onOpenChange={(o) => !o && setExcelFile(null)}
         file={excelFile}
       />
+      <SheetsImportDialog open={sheetsOpen} onOpenChange={setSheetsOpen} onFile={setExcelFile} />
       <ParticipantDialog
         open={editing !== undefined}
         onOpenChange={(o) => !o && setEditing(undefined)}
