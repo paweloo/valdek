@@ -25,6 +25,7 @@ export function ExcelImportDialog({
   const seedBanner = useValdek((s) => s.seedBanner);
   const importRows = useValdek((s) => s.importRows);
   const setSourceWorkbook = useValdek((s) => s.setSourceWorkbook);
+  const setSourceMapping = useValdek((s) => s.setSourceMapping);
   const [headers, setHeaders] = useState<string[]>([]);
   const [rows, setRows] = useState<string[][]>([]);
   const [mapping, setMapping] = useState<ExcelMapping>({ months: {} });
@@ -61,6 +62,7 @@ export function ExcelImportDialog({
 
   const apply = async () => {
     const count = importRows(rows, mapping, mode);
+    setSourceMapping(mapping);
     if (file) {
       const buf = await file.arrayBuffer();
       if (/\.xlsx$/i.test(file.name)) setSourceWorkbook(buf, file.name);
