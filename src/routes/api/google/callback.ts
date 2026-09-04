@@ -5,9 +5,10 @@ export const Route = createFileRoute("/api/google/callback")({
   server: {
     handlers: {
       GET: async ({ request }) => {
-        const { exchangeGoogleCode, readOAuthState } = await import("@/lib/google.server");
+        const { exchangeGoogleCode, readOAuthState, publicOrigin } = await import("@/lib/google.server");
+        const { getCookie } = await import("@tanstack/react-start/server");
         const url = new URL(request.url);
-        const origin = url.origin;
+        const origin = getCookie("valdek_g_origin") || publicOrigin(request) || url.origin;
         const secure = origin.startsWith("https://");
         const error = url.searchParams.get("error");
         const code = url.searchParams.get("code") ?? "";
@@ -24,6 +25,7 @@ export const Route = createFileRoute("/api/google/callback")({
           headers.append("Set-Cookie", cookieHeader("valdek_g_rt", result.refreshToken, 60 * 60 * 24 * 30, secure));
         }
         headers.append("Set-Cookie", cookieHeader("valdek_g_state", "", 0, secure));
+        headers.append("Set-Cookie", cookieHeader("valdek_g_origin", "", 0, secure));
         return new Response(null, { status: 302, headers });
       },
     },

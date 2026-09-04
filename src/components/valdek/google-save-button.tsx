@@ -23,14 +23,14 @@ export function GoogleSaveButton() {
   const seasonStartYear = useValdek((s) => s.seasonStartYear);
   const sourceSheetUrl = useValdek((s) => s.sourceSheetUrl);
   const sourceMapping = useValdek((s) => s.sourceMapping);
-  const [status, setStatus] = useState<{ configured: boolean; connected: boolean } | null>(null);
+  const [status, setStatus] = useState<{ configured: boolean; connected: boolean; redirectUri: string } | null>(null);
   const [setupOpen, setSetupOpen] = useState(false);
   const [busy, setBusy] = useState(false);
 
   const refreshStatus = () => {
     void getGoogleStatus()
       .then(setStatus)
-      .catch(() => setStatus({ configured: false, connected: false }));
+      .catch(() => setStatus({ configured: false, connected: false, redirectUri: "" }));
   };
 
   useEffect(() => {
@@ -106,6 +106,15 @@ export function GoogleSaveButton() {
     toast.success("Rozłączono Google");
   };
 
+  const clientRedirect =
+    typeof window === "undefined" ? status?.redirectUri ?? "" : `${window.location.origin}/api/google/callback`;
+  const redirectUri = status?.redirectUri || clientRedirect;
+  const extraRedirects = redirectUri.includes("localhost")
+    ? [redirectUri.replace("localhost", "127.0.0.1")]
+    : redirectUri.includes("127.0.0.1")
+      ? [redirectUri.replace("127.0.0.1", "localhost")]
+      : [];
+
   return (
     <>
       <Button variant="outline" onClick={() => void save()} disabled={busy}>
@@ -116,26 +125,36 @@ export function GoogleSaveButton() {
         <Button variant="ghost" size="icon" aria-label="Rozłącz Google" onClick={() => void disconnect()}>
           <LogOut />
         </Button>
-      ) : null}
+      ) : (
+        <Button variant="ghost" onClick={() => setSetupOpen(true)}>
+          URI Google
+        </Button>
+      )}
       <Dialog open={setupOpen} onOpenChange={setSetupOpen}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Połącz Google Sheets</DialogTitle>
             <DialogDescription>
-              Żeby Valdek zapisywał zmiany w arkuszu, potrzebuje logowania Google z dostępem do
-              arkuszy. Ustaw to raz w projekcie Google Cloud i w Vercel.
+              Błąd <span className="font-mono">redirect_uri_mismatch</span> znaczy, że w Google Cloud nie ma
+              dokładnie tego adresu. Wklej go 1:1, bez ukośnika na końcu.
             </DialogDescription>
           </DialogHeader>
+          <div className="grid gap-2">
+            <p className="text-xs tracking-wide text-muted-foreground uppercase">Authorized redirect URI</p>
+            <code className="block break-all rounded-md bg-secondary px-3 py-2 text-sm text-foreground">
+              {redirectUri || "http://localhost:8080/api/google/callback"}
+            </code>
+            {extraRedirects.map((uri) => (
+              <code key={uri} className="block break-all rounded-md bg-secondary px-3 py-2 text-sm text-foreground">
+                {uri}
+              </code>
+            ))}
+          </div>
           <ol className="list-decimal space-y-2 pl-5 text-sm text-muted-foreground">
-            <li>W Google Cloud włącz Google Sheets API.</li>
-            <li>Utwórz identyfikator klienta OAuth (aplikacja internetowa).</li>
-            <li>
-              Authorized redirect URI: adres Valdka + <span className="font-mono text-foreground">/api/google/callback</span>
-            </li>
-            <li>
-              W Vercel dodaj <span className="font-mono text-foreground">GOOGLE_CLIENT_ID</span> i{" "}
-              <span className="font-mono text-foreground">GOOGLE_CLIENT_SECRET</span>.
-            </li>
+            <li>Google Cloud → APIs & Services → Credentials → Twój OAuth client.</li>
+            <li>Authorized redirect URIs → Add URI → wklej adresy powyżej.</li>
+            <li>Authorized JavaScript origins: ten sam host, bez ścieżki (np. http://localhost:8080).</li>
+            <li>Zapisz i poczekaj chwilę — Google czasem cache’uje stary URI.</li>
           </ol>
           <DialogFooter>
             <Button onClick={() => setSetupOpen(false)}>Rozumiem</Button>

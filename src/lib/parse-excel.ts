@@ -7,7 +7,7 @@ const FIRST_HEADERS = ["imie", "imię", "first", "firstname"];
 const LAST_HEADERS = ["nazwisko", "last", "lastname"];
 const GROUP_HEADERS = ["grupa", "zajecia", "zajęcia", "group", "pracownia", "sekcja"];
 const FEE_HEADERS = ["kwota", "oplata", "opłata", "stawka", "fee", "naleznosc", "należność", "pln", "miesiecznie", "miesięcznie"];
-const NON_GROUP_HEADERS = new Set(["regulamin", "zgoda", "rodo", "uwagi", "notes", "email", "e mail", "telefon", "tel", "adres", "pesel", "lp", "nr", "id"]);
+const NON_GROUP_HEADERS = new Set(["regulamin", "zgoda", "rodo", "uwagi", "notes", "email", "e mail", "mail", "e-mail", "telefon", "tel", "adres", "pesel", "lp", "nr", "id"]);
 const TRUE_CELLS = new Set(["tak", "ok", "wplacono", "yes", "x", "v", "true", "prawda", "1"]);
 const FALSE_CELLS = new Set(["nie", "brak", "0", "n", "no", "false", "falsz"]);
 
@@ -45,8 +45,18 @@ export function isPaidCell(value: string) {
   return { paid: false, amount: null };
 }
 
+function isHeadcountCell(value: string) {
+  if (isBooleanCell(value)) return false;
+  return /^\d{1,4}$/.test(value.trim());
+}
+
+function namedRows(rows: string[][], mapping: ExcelMapping) {
+  const nameIdx = mapping.fullName ?? mapping.lastName ?? mapping.firstName ?? 0;
+  return rows.filter((row) => (row[nameIdx] ?? "").trim().length > 0);
+}
+
 function columnLooksBoolean(rows: string[][], index: number) {
-  const values = rows.map((r) => r[index] ?? "").filter((v) => v.length > 0);
+  const values = rows.map((r) => r[index] ?? "").filter((v) => v.length > 0 && !isHeadcountCell(v));
   if (values.length === 0) return false;
   return values.every((v) => isBooleanCell(v));
 }
@@ -57,15 +67,16 @@ function detectGroupFlags(headers: string[], rows: string[][], mapping: ExcelMap
     if (idx != null) used.add(idx);
   }
   for (const idx of Object.values(mapping.months)) used.add(idx);
+  const peopleRows = namedRows(rows, mapping);
   const flags: GroupFlagColumn[] = [];
   headers.forEach((header, i) => {
     if (used.has(i)) return;
-    const name = header.trim();
+    const name = header.replace(/\s+/g, " ").trim();
     if (!name) return;
     const norm = normalizeText(name);
     if (NON_GROUP_HEADERS.has(norm)) return;
     if (headerLooksLikeMonth(name)) return;
-    if (!columnLooksBoolean(rows, i)) return;
+    if (!columnLooksBoolean(peopleRows.length ? peopleRows : rows, i)) return;
     flags.push({ column: i, name });
   });
   return flags;
@@ -93,7 +104,7 @@ export function guessMapping(headers: string[], seasonYear: number, rows: string
   if (rows.length) {
     mapping.groupFlags = detectGroupFlags(headers, rows, mapping);
     if (mapping.fullName != null) {
-      const names = rows.map((r) => r[mapping.fullName!] ?? "").filter(Boolean);
+      const names = namedRows(rows, mapping).map((r) => r[mapping.fullName!] ?? "").filter(Boolean);
       mapping.nameOrder = guessNameOrder(names);
     }
   }

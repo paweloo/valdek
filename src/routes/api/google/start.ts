@@ -6,8 +6,8 @@ export const Route = createFileRoute("/api/google/start")({
     handlers: {
       GET: async ({ request }) => {
         const { readPinGate } = await import("@/lib/pin.server");
-        const { googleAuthUrl, googleIsConfigured, newOAuthState } = await import("@/lib/google.server");
-        const origin = new URL(request.url).origin;
+        const { googleAuthUrl, googleIsConfigured, newOAuthState, publicOrigin } = await import("@/lib/google.server");
+        const origin = publicOrigin(request);
         const secure = origin.startsWith("https://");
         const gate = readPinGate();
         if (gate.required && !gate.unlocked) {
@@ -22,6 +22,7 @@ export const Route = createFileRoute("/api/google/start")({
         const headers = new Headers();
         headers.set("Location", url);
         headers.append("Set-Cookie", cookieHeader("valdek_g_state", state, 600, secure));
+        headers.append("Set-Cookie", cookieHeader("valdek_g_origin", origin, 600, secure));
         return new Response(null, { status: 302, headers });
       },
     },

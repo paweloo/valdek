@@ -1,4 +1,4 @@
-import { getCookie, setCookie, deleteCookie } from "@tanstack/react-start/server";
+import { getCookie, setCookie, deleteCookie, getRequest } from "@tanstack/react-start/server";
 import { interpretExcelRow } from "./parse-excel";
 import { readPinGate } from "./pin.server";
 import { parseGoogleSheetUrl } from "./sheets-url";
@@ -42,6 +42,28 @@ export function googleIsConfigured() {
 
 export function googleIsConnected() {
   return Boolean(getCookie(AT) || getCookie(RT));
+}
+
+export function publicOrigin(request?: Request | null) {
+  const override = String(process.env["GOOGLE_REDIRECT_ORIGIN"] ?? "")
+    .trim()
+    .replace(/\/$/, "");
+  if (override) return override;
+
+  const req = request ?? getRequest() ?? null;
+  if (!req) return "";
+  const url = new URL(req.url);
+  const forwardedHost = req.headers.get("x-forwarded-host")?.split(",")[0]?.trim();
+  const hostHeader = req.headers.get("host")?.split(",")[0]?.trim();
+  let host = forwardedHost || hostHeader || url.host;
+  if (host.startsWith("0.0.0.0")) host = host.replace(/^0\.0\.0\.0/, "localhost");
+  const forwardedProto = req.headers.get("x-forwarded-proto")?.split(",")[0]?.trim();
+  const proto = forwardedProto || url.protocol.replace(":", "") || "http";
+  return `${proto}://${host}`;
+}
+
+export function googleCallbackUrl(origin: string) {
+  return `${origin.replace(/\/$/, "")}/api/google/callback`;
 }
 
 export function googleAuthUrl(origin: string, state: string) {

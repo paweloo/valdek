@@ -27,8 +27,13 @@ const SaveSchema = z.object({
 });
 
 export const getGoogleStatus = createServerFn({ method: "GET" }).handler(async () => {
-  const { googleIsConfigured, googleIsConnected } = await import("./google.server");
-  return { configured: googleIsConfigured(), connected: googleIsConnected() };
+  const { googleIsConfigured, googleIsConnected, publicOrigin, googleCallbackUrl } = await import("./google.server");
+  const origin = publicOrigin();
+  return {
+    configured: googleIsConfigured(),
+    connected: googleIsConnected(),
+    redirectUri: origin ? googleCallbackUrl(origin) : "",
+  };
 });
 
 export const saveGoogleSheet = createServerFn({ method: "POST" })
