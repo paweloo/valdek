@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { CloudUpload, LogOut } from "lucide-react";
+import { CloudUpload, LogIn, LogOut } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import {
@@ -10,6 +10,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { disconnectGoogle, getGoogleStatus, saveGoogleSheet } from "@/lib/google";
 import { peopleFromState } from "@/lib/patch-ewidencja";
 import { seasonMonths } from "@/lib/polish";
@@ -26,6 +27,7 @@ export function GoogleSaveButton() {
   const [status, setStatus] = useState<{ configured: boolean; connected: boolean; redirectUri: string } | null>(null);
   const [setupOpen, setSetupOpen] = useState(false);
   const [busy, setBusy] = useState(false);
+  const connected = Boolean(status?.connected);
 
   const refreshStatus = () => {
     void getGoogleStatus()
@@ -47,21 +49,22 @@ export function GoogleSaveButton() {
     }
   }, []);
 
+  const login = () => {
+    if (!status?.configured) {
+      setSetupOpen(true);
+      return;
+    }
+    window.location.assign("/api/google/start");
+  };
+
   const save = async () => {
+    if (!connected) return;
     if (!sourceSheetUrl) {
       toast.error("Najpierw wczytaj listę z Google Sheets.");
       return;
     }
     if (!sourceMapping) {
       toast.error("Brak mapowania kolumn. Wczytaj arkusz jeszcze raz.");
-      return;
-    }
-    if (!status?.configured) {
-      setSetupOpen(true);
-      return;
-    }
-    if (!status.connected) {
-      window.location.assign("/api/google/start");
       return;
     }
     if (busy) return;
@@ -73,9 +76,7 @@ export function GoogleSaveButton() {
         .filter((p) => p.active)
         .map((p) => {
           const groupName = groups.find((g) => g.id === p.groupId)?.name ?? "";
-          const paid = rows.find(
-            (r) => r.lastFirst === `${p.lastName} ${p.firstName}`.trim(),
-          );
+          const paid = rows.find((r) => r.lastFirst === `${p.lastName} ${p.firstName}`.trim());
           return {
             firstName: p.firstName,
             lastName: p.lastName,
@@ -103,7 +104,7 @@ export function GoogleSaveButton() {
   const disconnect = async () => {
     await disconnectGoogle();
     setStatus((s) => (s ? { ...s, connected: false } : s));
-    toast.success("Rozłączono Google");
+    toast.success("Wylogowano z Google");
   };
 
   const clientRedirect =
@@ -115,19 +116,34 @@ export function GoogleSaveButton() {
       ? [redirectUri.replace("127.0.0.1", "localhost")]
       : [];
 
+  const saveButton = (
+    <Button variant="outline" onClick={() => void save()} disabled={!connected || busy}>
+      <CloudUpload />
+      Zapisz w Google Sheets
+    </Button>
+  );
+
   return (
     <>
-      <Button variant="outline" onClick={() => void save()} disabled={busy}>
-        <CloudUpload />
-        {status?.connected ? "Zapisz do arkusza" : "Zaloguj Google i zapisz"}
-      </Button>
-      {status?.connected ? (
-        <Button variant="ghost" size="icon" aria-label="Rozłącz Google" onClick={() => void disconnect()}>
+      {connected ? (
+        saveButton
+      ) : (
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <span className="inline-flex">{saveButton}</span>
+          </TooltipTrigger>
+          <TooltipContent>Zaloguj się, żeby zapisać plik</TooltipContent>
+        </Tooltip>
+      )}
+      {connected ? (
+        <Button variant="ghost" onClick={() => void disconnect()}>
           <LogOut />
+          Wyloguj
         </Button>
       ) : (
-        <Button variant="ghost" onClick={() => setSetupOpen(true)}>
-          URI Google
+        <Button variant="secondary" onClick={login}>
+          <LogIn />
+          Zaloguj Google
         </Button>
       )}
       <Dialog open={setupOpen} onOpenChange={setSetupOpen}>
