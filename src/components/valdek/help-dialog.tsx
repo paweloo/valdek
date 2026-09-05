@@ -36,6 +36,7 @@ const STEPS = [
 
 export function HelpButton() {
   const [open, setOpen] = useState(false);
+
   return (
     <>
       <Tooltip>
