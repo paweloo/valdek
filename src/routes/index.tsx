@@ -49,8 +49,7 @@ function Home() {
         {seedBanner && seeded ? (
           <div className="flex items-start justify-between gap-4 rounded-xl bg-secondary px-4 py-3">
             <p className="text-sm text-muted-foreground">
-              To podgląd na Twojej ewidencji (Zajkowie, grupy seniorów). Wgraj Excel i PDF z mBanku
-              — nic nie wychodzi z tej przeglądarki. Eksport wraca do Twojego pliku z checkboxami.
+              To podgląd na Twojej ewidencji. Wgraj Excel i PDF z mBanku.
             </p>
             <Button
               variant="ghost"

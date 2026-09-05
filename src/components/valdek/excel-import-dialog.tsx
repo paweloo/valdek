@@ -121,8 +121,8 @@ export function ExcelImportDialog({
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="last-first">Nazwisko Imię (Zajk Julia)</SelectItem>
-                <SelectItem value="first-last">Imię Nazwisko (Julia Zajk)</SelectItem>
+                <SelectItem value="last-first">Nazwisko Imię (Kowalski Jan)</SelectItem>
+                <SelectItem value="first-last">Imię Nazwisko (Jan Kowalski)</SelectItem>
               </SelectContent>
             </Select>
           </div>
