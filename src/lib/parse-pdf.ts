@@ -18,7 +18,6 @@ async function loadPdfjs() {
 export async function parseBankPdf(
   file: File | ArrayBuffer | Uint8Array,
   fileName: string,
-  month: string,
 ): Promise<PdfParseResult> {
   const pdfjs = await loadPdfjs();
   const data =
@@ -54,7 +53,6 @@ export async function parseBankPdf(
     statement: {
       id: statementId,
       fileName,
-      month,
       importedAt: new Date().toISOString(),
       transferCount: incoming.length,
       warning,

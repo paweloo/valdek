@@ -22,7 +22,7 @@ const STEPS = [
   },
   {
     title: "Wyciąg",
-    body: "Wgraj PDF z historią operacji z banku. Na razie obsługiwany jest tylko mBank.",
+    body: "Wgraj PDF z historią operacji z banku. Na razie obsługiwany jest tylko mBank. Możesz dodać kilka wyciągów — pliki nie są przypisane do miesiąca z nagłówka, a miesiąc wpłaty Valdek bierze z tytułu przelewu.",
   },
   {
     title: "Rozliczenie",

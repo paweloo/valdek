@@ -3,19 +3,26 @@ import { cn } from "@/lib/utils";
 
 export function FileDrop({
   accept,
-  onFile,
+  onFiles,
   children,
   className,
   label,
+  multiple = false,
 }: {
   accept: string;
-  onFile: (file: File) => void;
+  onFiles: (files: File[]) => void;
   children?: ReactNode;
   className?: string;
   label: string;
+  multiple?: boolean;
 }) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [over, setOver] = useState(false);
+  const take = (list: FileList | null) => {
+    if (!list?.length) return;
+    const files = Array.from(list);
+    onFiles(multiple ? files : files.slice(0, 1));
+  };
   return (
     <div
       onDragOver={(e: DragEvent) => {
@@ -26,8 +33,7 @@ export function FileDrop({
       onDrop={(e: DragEvent) => {
         e.preventDefault();
         setOver(false);
-        const file = e.dataTransfer.files?.[0];
-        if (file) onFile(file);
+        take(e.dataTransfer.files);
       }}
       className={cn(
         "relative flex min-h-44 w-full flex-col items-center justify-center overflow-hidden rounded-xl bg-card px-6 py-8 text-center shadow-[var(--shadow-border)]",
@@ -39,11 +45,11 @@ export function FileDrop({
         ref={inputRef}
         type="file"
         accept={accept}
+        multiple={multiple}
         aria-label={label}
         className="absolute inset-0 z-10 cursor-pointer opacity-0"
         onChange={(e) => {
-          const file = e.target.files?.[0];
-          if (file) onFile(file);
+          take(e.target.files);
           e.currentTarget.value = "";
         }}
       />

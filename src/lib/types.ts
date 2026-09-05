@@ -22,7 +22,6 @@ export type ManualMark = {
 export type Statement = {
   id: string;
   fileName: string;
-  month: string;
   importedAt: string;
   transferCount: number;
   warning?: string;

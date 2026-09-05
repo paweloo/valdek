@@ -11,14 +11,12 @@ import { parseTransfersFromText } from "@/lib/parse-text";
 import { DEMO_STATEMENT_LINES } from "@/lib/demo";
 import { useValdek } from "@/lib/store";
 import { uid, formatPln } from "@/lib/utils";
-import { monthLabel } from "@/lib/polish";
 import { toast } from "sonner";
 import type { Statement, Transfer } from "@/lib/types";
 
 export const Route = createFileRoute("/wyciag")({ component: WyciagPage });
 
 function WyciagPage() {
-  const selectedMonth = useValdek((s) => s.selectedMonth);
   const statements = useValdek((s) => s.statements);
   const transfers = useValdek((s) => s.transfers);
   const matches = useValdek((s) => s.matches);
@@ -31,7 +29,7 @@ function WyciagPage() {
   const [busy, setBusy] = useState(false);
   const [showSpend, setShowSpend] = useState(false);
 
-  const ingest = (statement: Statement, nextTransfers: Transfer[]) => {
+  const ingest = (statement: Statement, nextTransfers: Transfer[], goToSettle = true) => {
     addStatement(statement, nextTransfers);
     const incoming = nextTransfers.filter((t) => t.direction !== "out" && !t.ignored).length;
     const skipped = nextTransfers.length - incoming;
@@ -40,15 +38,19 @@ function WyciagPage() {
         ? `Wczytano ${incoming} wpłat, pominięto ${skipped} wydatków kartą`
         : `Wczytano ${incoming} wpłat`,
     );
-    void navigate({ to: "/rozliczenie" });
+    if (goToSettle) void navigate({ to: "/rozliczenie" });
   };
 
-  const onPdf = async (file: File) => {
+  const onPdfs = async (files: File[]) => {
+    if (!files.length || busy) return;
     setBusy(true);
     try {
-      const result = await parseBankPdf(file, file.name, selectedMonth);
-      if (result.statement.warning) toast.message(result.statement.warning);
-      ingest(result.statement, result.transfers);
+      for (let i = 0; i < files.length; i += 1) {
+        const file = files[i]!;
+        const result = await parseBankPdf(file, file.name);
+        if (result.statement.warning) toast.message(result.statement.warning);
+        ingest(result.statement, result.transfers, i === files.length - 1);
+      }
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Nie udało się odczytać PDF");
     } finally {
@@ -63,7 +65,6 @@ function WyciagPage() {
       {
         id: statementId,
         fileName: "wklejony-tekst.txt",
-        month: selectedMonth,
         importedAt: new Date().toISOString(),
         transferCount: next.filter((t) => t.direction !== "out" && !t.ignored).length,
       },
@@ -75,7 +76,7 @@ function WyciagPage() {
     setBusy(true);
     try {
       const bytes = buildSamplePdf(DEMO_STATEMENT_LINES);
-      const result = await parseBankPdf(bytes, "przyklad-lista-operacji.pdf", selectedMonth);
+      const result = await parseBankPdf(bytes, "przyklad-lista-operacji.pdf");
       ingest(result.statement, result.transfers);
     } catch {
       const statementId = uid("st");
@@ -84,7 +85,6 @@ function WyciagPage() {
         {
           id: statementId,
           fileName: "przyklad-lista-operacji.pdf",
-          month: selectedMonth,
           importedAt: new Date().toISOString(),
           transferCount: next.filter((t) => t.direction !== "out" && !t.ignored).length,
         },
@@ -112,13 +112,14 @@ function WyciagPage() {
           </p>
         </header>
         <div className="grid gap-4 lg:grid-cols-2">
-          <FileDrop accept="application/pdf,.pdf" onFile={onPdf} label="Wgraj PDF z wyciągiem">
+          <FileDrop accept="application/pdf,.pdf" multiple onFiles={onPdfs} label="Wgraj PDF z wyciągiem">
             <FileText className="mb-3 size-6 text-muted-foreground" />
             <div className="font-display text-2xl">
               {busy ? "Czytam wyciąg…" : `Dodaj wyciąg z banku w formacie PDF`}
             </div>
             <p className="mt-2 max-w-sm text-sm text-muted-foreground">
-              Aktualnie obsługiwany jest tylko mBank.
+              Aktualnie obsługiwany jest tylko mBank. Możesz wgrać kilka plików — nie są przypisane do
+              miesiąca z nagłówka.
             </p>
           </FileDrop>
           <div className="rounded-xl bg-card p-5 shadow-[var(--shadow-border)]">
@@ -152,7 +153,15 @@ function WyciagPage() {
                 >
                   <div>
                     <div className="text-sm font-medium">{s.fileName}</div>
-                    <div className="text-xs text-muted-foreground">{monthLabel(s.month)}</div>
+                    <div className="text-xs text-muted-foreground">
+                      {s.transferCount} wpłat ·{" "}
+                      {new Date(s.importedAt).toLocaleString("pl-PL", {
+                        day: "numeric",
+                        month: "short",
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })}
+                    </div>
                   </div>
                   <Button
                     variant="ghost"

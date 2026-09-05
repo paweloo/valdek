@@ -195,16 +195,9 @@ export const useValdek = create<ValdekState>()(
         return imported.length;
       },
       addStatement: (statement, transfers) => {
-        const replacedIds = new Set(
-          get()
-            .statements.filter(
-              (s) => s.id === statement.id || s.month === statement.month || s.fileName === statement.fileName,
-            )
-            .map((s) => s.id),
-        );
         set({
-          statements: [...get().statements.filter((s) => !replacedIds.has(s.id)), statement],
-          transfers: [...get().transfers.filter((t) => !replacedIds.has(t.statementId)), ...transfers],
+          statements: [...get().statements.filter((s) => s.id !== statement.id), statement],
+          transfers: [...get().transfers.filter((t) => t.statementId !== statement.id), ...transfers],
           seeded: true,
           seedBanner: false,
         });

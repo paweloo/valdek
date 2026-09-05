@@ -32,7 +32,6 @@ export function demoStatement(): Statement {
   return {
     id: "st-demo",
     fileName: "lista_operacji_wrzesien.pdf",
-    month: DEMO_MONTH,
     importedAt: "2026-09-02T18:00:00.000Z",
     transferCount: 1,
   };
