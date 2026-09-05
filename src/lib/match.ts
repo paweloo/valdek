@@ -3,17 +3,46 @@ import { detectMonthsInText, normalizeText } from "./polish";
 import { uid } from "./utils";
 
 const TITLE_NOISE = new Set([
-  "przelew", "przychodzacy", "przychodzace", "elixir", "wplata", "tytulem", "tytul",
-  "zajecia", "zajec", "miesiac", "miesiaca", "online", "ekspresowy", "zwykly",
-  "rachunku", "rachunek", "od", "dla", "syna", "corki", "dziecka", "syn", "corka",
-  "za", "mkonto", "intensive", "wplywy", "inne", "wewnetrzny", "mbank", "ul",
+  "przelew",
+  "przychodzacy",
+  "przychodzace",
+  "elixir",
+  "wplata",
+  "tytulem",
+  "tytul",
+  "zajecia",
+  "zajec",
+  "miesiac",
+  "miesiaca",
+  "online",
+  "ekspresowy",
+  "zwykly",
+  "rachunku",
+  "rachunek",
+  "od",
+  "dla",
+  "syna",
+  "corki",
+  "dziecka",
+  "syn",
+  "corka",
+  "za",
+  "mkonto",
+  "intensive",
+  "wplywy",
+  "inne",
+  "wewnetrzny",
+  "mbank",
+  "ul",
 ]);
 
 export function levenshtein(a: string, b: string) {
   if (a === b) return 0;
   if (!a.length) return b.length;
   if (!b.length) return a.length;
-  const dp: number[][] = Array.from({ length: a.length + 1 }, () => Array.from({ length: b.length + 1 }, () => 0));
+  const dp: number[][] = Array.from({ length: a.length + 1 }, () =>
+    Array.from({ length: b.length + 1 }, () => 0),
+  );
   for (let i = 0; i <= a.length; i += 1) dp[i]![0] = i;
   for (let j = 0; j <= b.length; j += 1) dp[0]![j] = j;
   for (let i = 1; i <= a.length; i += 1) {
@@ -28,12 +57,15 @@ export function levenshtein(a: string, b: string) {
 function similarity(a: string, b: string) {
   if (!a || !b) return 0;
   if (a === b) return 1;
-  if (a.includes(b) || b.includes(a)) return Math.min(a.length, b.length) / Math.max(a.length, b.length);
+  if (a.includes(b) || b.includes(a))
+    return Math.min(a.length, b.length) / Math.max(a.length, b.length);
   return 1 - levenshtein(a, b) / Math.max(a.length, b.length);
 }
 
 function tokensOf(text: string) {
-  return normalizeText(text).split(" ").filter((t) => t.length > 1 && !TITLE_NOISE.has(t));
+  return normalizeText(text)
+    .split(" ")
+    .filter((t) => t.length > 1 && !TITLE_NOISE.has(t));
 }
 
 function groupScore(titleNorm: string, groupName: string, allGroups: Group[]) {
@@ -111,14 +143,24 @@ export function matchTransfers(params: {
   existing: PaymentMatch[];
 }): PaymentMatch[] {
   const { transfers, participants, groups, statementMonth, existing } = params;
-  const taken = new Set(existing.filter((m) => m.kind === "confirmed" || m.kind === "manual").map((m) => m.transferId));
+  const taken = new Set(
+    existing.filter((m) => m.kind === "confirmed" || m.kind === "manual").map((m) => m.transferId),
+  );
   const year = Number(statementMonth.slice(0, 4));
   const monthNum = Number(statementMonth.slice(5, 7));
   const seasonYear = monthNum >= 9 ? year : year - 1;
-  const next: PaymentMatch[] = existing.filter((m) => m.kind === "confirmed" || m.kind === "manual");
+  const next: PaymentMatch[] = existing.filter(
+    (m) => m.kind === "confirmed" || m.kind === "manual",
+  );
   const active = participants.filter((p) => p.active);
   for (const transfer of transfers) {
-    if (transfer.ignored || transfer.direction === "out" || taken.has(transfer.id) || transfer.amount <= 0) continue;
+    if (
+      transfer.ignored ||
+      transfer.direction === "out" ||
+      taken.has(transfer.id) ||
+      transfer.amount <= 0
+    )
+      continue;
     const scored = active
       .map((p) => {
         const { score, reasons } = scoreParticipant(transfer.title, p, groups);
@@ -132,15 +174,19 @@ export function matchTransfers(params: {
     if (!unique && best.score < 0.78) continue;
     const months = detectMonthsInText(transfer.title, seasonYear);
     const month = months.find((m) => m === statementMonth) ?? months[0] ?? statementMonth;
-    const monthMismatch = months.length > 0 && !months.includes(statementMonth);
-    if (monthMismatch) best.reasons.push(`tytuł wskazuje ${months[0]}`);
+    // const monthMismatch = months.length > 0 && !months.includes(statementMonth);
+    // if (monthMismatch) best.reasons.push(`tytuł wskazuje ${months[0]}`);
     const issue = amountIssue(best.participant.monthlyFee, transfer.amount);
     if (issue === "partial") best.reasons.push("kwota niższa niż stawka");
     if (issue === "over") {
-      best.reasons.push(transfer.amount >= best.participant.monthlyFee * 1.8 ? "kwota wygląda na dwa miesiące" : "nadpłata");
+      best.reasons.push(
+        transfer.amount >= best.participant.monthlyFee * 1.8
+          ? "kwota wygląda na dwa miesiące"
+          : "nadpłata",
+      );
     }
     const kind: PaymentMatch["kind"] =
-      best.score >= 0.78 && unique && issue === "ok" && !monthMismatch ? "auto" : "suggested";
+      best.score >= 0.78 && unique && issue === "ok" ? "auto" : "suggested"; // best.score >= 0.78 && unique && issue === "ok" && !monthMismatch ? "auto" : "suggested";
     next.push({
       id: uid("match"),
       transferId: transfer.id,
