@@ -14,7 +14,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 const STEPS = [
   {
     title: "Uczestnicy",
-    body: "Kliknij „Wczytaj z Google Sheets” i wklej link do arkusza. Pamiętaj, aby najpierw wybrać odpowiednią zakładkę w Google Sheets przed skopiowaniem listy, którą chcesz wczytać - Valdek bierze tylko aktywną zakładkę z adresu URL.",
+    body: "Kliknij „Wczytaj z Google Sheets” i wklej link do arkusza. Pamiętaj, aby najpierw wybrać odpowiednią zakładkę w Google Sheets przed skopiowaniem listy, którą chcesz wczytać - Valdek pobierze dane tylko z aktywnego arkusza.",
   },
   {
     title: "Uprawnienia arkusza",
@@ -22,7 +22,7 @@ const STEPS = [
   },
   {
     title: "Wyciąg",
-    body: "Wgraj PDF z historią operacji z banku. Na razie obsługiwany jest tylko mBank. Możesz dodać kilka wyciągów — pliki nie są przypisane do miesiąca z nagłówka, a miesiąc wpłaty Valdek bierze z tytułu przelewu.",
+    body: "Wgraj PDF z historią operacji z banku. Na razie obsługiwany jest tylko mBank. Możesz dodać kilka wyciągów na raz.",
   },
   {
     title: "Rozliczenie",
