@@ -1,5 +1,4 @@
 import type { ManualMark, MatchKind, Participant, PaymentMatch } from "./types";
-import { receivedFor } from "./store";
 
 export type MonthStatus = "paid" | "partial" | "over" | "unpaid" | "review";
 export type TransferBucket = "unmatched" | "review" | "booked";
@@ -22,16 +21,26 @@ export function monthStatusFor(
 ): { status: MonthStatus; received: number; expected: number } {
   const expected = participant.monthlyFee;
   const mark = manual[participant.id]?.[month];
-  const received = receivedFor(participant.id, month, matches);
-  if (mark?.status === "paid") return { status: "paid", received: mark.amount ?? received ?? expected, expected };
-  if (mark?.status === "unpaid") return { status: "unpaid", received: 0, expected };
-  if (mark?.status === "partial") return { status: "partial", received: mark.amount ?? received, expected };
-  if (received <= 0) return { status: "unpaid", received, expected };
   const related = matches.filter((m) => m.participantId === participant.id && m.month === month);
-  if (related.some((m) => isPendingKind(m.kind))) return { status: "review", received, expected };
-  if (Math.abs(received - expected) <= 1) return { status: "paid", received, expected };
-  if (received < expected) return { status: "partial", received, expected };
-  return { status: "over", received, expected };
+  const received = related.reduce((sum, m) => sum + m.amount, 0);
+  const prior =
+    mark?.status === "paid" ? (mark.amount ?? expected) : mark?.status === "partial" ? (mark.amount ?? 0) : 0;
+  const total = prior + received;
+
+  if (mark?.status === "unpaid" && received <= 0) return { status: "unpaid", received: 0, expected };
+  if (mark?.status === "paid" && received <= 1) {
+    return { status: "paid", received: prior || expected, expected };
+  }
+  if (received <= 0) {
+    if (mark?.status === "partial") return { status: "partial", received: prior, expected };
+    if (mark?.status === "paid") return { status: "paid", received: prior || expected, expected };
+    return { status: "unpaid", received: 0, expected };
+  }
+  if (mark?.status === "paid") return { status: "over", received: total, expected };
+  if (related.some((m) => isPendingKind(m.kind))) return { status: "review", received: total, expected };
+  if (Math.abs(total - expected) <= 1) return { status: "paid", received: total, expected };
+  if (total < expected) return { status: "partial", received: total, expected };
+  return { status: "over", received: total, expected };
 }
 
 export const STATUS_LABEL: Record<MonthStatus, string> = {

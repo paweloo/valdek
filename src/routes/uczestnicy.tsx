@@ -204,7 +204,13 @@ function UczestnicyPage() {
                               // )
                             }
                           >
-                            {cell.status === "unpaid" ? "—" : cell.status === "paid" ? "✓" : "?"}
+                            {cell.status === "unpaid"
+                              ? "—"
+                              : cell.status === "paid"
+                                ? "✓"
+                                : cell.status === "over"
+                                  ? "✓+"
+                                  : "?"}
                           </button>
                         </td>
                       );
