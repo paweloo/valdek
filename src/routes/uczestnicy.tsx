@@ -183,24 +183,25 @@ function UczestnicyPage() {
                     </td>
                     {months.map((m) => {
                       const cell = monthStatusFor(p, m, matches, manual);
-                      const mark =
-                        cell.status === "paid" || cell.status === "over"
-                          ? "paid"
-                          : cell.status === "unpaid"
-                            ? null
-                            : cell.status;
+                      // const mark =
+                      //   cell.status === "paid" || cell.status === "over"
+                      //     ? "paid"
+                      //     : cell.status === "unpaid"
+                      //       ? null
+                      //       : cell.status;
                       return (
                         <td key={m} className="px-2 py-2 text-center">
                           <button
                             className="text-xs text-muted-foreground"
-                            onClick={() =>
-                              setManual(
-                                p.id,
-                                m,
-                                mark === "paid"
-                                  ? { status: "unpaid" }
-                                  : { status: "paid", amount: p.monthlyFee },
-                              )
+                            onClick={
+                              () => {}
+                              // setManual(
+                              //   p.id,
+                              //   m,
+                              //   mark === "paid"
+                              //     ? { status: "unpaid" }
+                              //     : { status: "paid", amount: p.monthlyFee },
+                              // )
                             }
                           >
                             {cell.status === "unpaid" ? "—" : cell.status === "paid" ? "✓" : "?"}

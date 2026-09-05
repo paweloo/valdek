@@ -112,14 +112,18 @@ function WyciagPage() {
           </p>
         </header>
         <div className="grid gap-4 lg:grid-cols-2">
-          <FileDrop accept="application/pdf,.pdf" multiple onFiles={onPdfs} label="Wgraj PDF z wyciągiem">
+          <FileDrop
+            accept="application/pdf,.pdf"
+            multiple
+            onFiles={onPdfs}
+            label="Wgraj PDF z wyciągiem"
+          >
             <FileText className="mb-3 size-6 text-muted-foreground" />
             <div className="font-display text-2xl">
               {busy ? "Czytam wyciąg…" : `Dodaj wyciąg z banku w formacie PDF`}
             </div>
             <p className="mt-2 max-w-sm text-sm text-muted-foreground">
-              Aktualnie obsługiwany jest tylko mBank. Możesz wgrać kilka plików — nie są przypisane do
-              miesiąca z nagłówka.
+              Aktualnie obsługiwany jest tylko mBank. Możesz wgrać kilka plików na raz
             </p>
           </FileDrop>
           <div className="rounded-xl bg-card p-5 shadow-[var(--shadow-border)]">
