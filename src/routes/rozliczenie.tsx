@@ -340,7 +340,7 @@ function TransferCard({
                 <Check /> Potwierdź
               </Button>
             ) : null}
-            {onSplit && primary && primary.amountIssue === "over" ? (
+            {/* {onSplit && primary && primary.amountIssue === "over" ? (
               <Button
                 type="button"
                 size="sm"
@@ -349,7 +349,7 @@ function TransferCard({
               >
                 <Split /> Dwa miesiące
               </Button>
-            ) : null}
+            ) : null} */}
             {onUnmatch && primary ? (
               <Button
                 type="button"
